@@ -1,0 +1,83 @@
+﻿@inherits EWS.BlazorShared.Base.JComponent<UcCustomers, EWS.BlazorShared.Base.JDlgOptions<bool>, bool>
+
+<JComponentLayout>
+    <Collapse DefaultActiveKey="@(new[]{"1"})" OnChange="Callback" >
+        <Panel Header="Search Option" Key="1">
+            <div @onkeyup="OnKeyUp">
+                <Form @ref="_form" Model="_formData" Name="advanced_search" Class="ant-advanced-search-form">
+                    <Row Gutter="24">
+                        @for (var i = 0; i < (_expand ? 10 : 6); i++)
+                        {
+                            var index = i;
+                            <GridCol Span="4" @key="index">
+                                <FormItem Label="@($"Field {index}")">
+                                    <Input @bind-Value="@(context[$"field-{index}"].Value)" Placeholder="placeholder" />
+                                </FormItem>
+                            </GridCol>
+                        }
+                        <GridCol Span="4" @key="11">
+                            <FormItem Label="@($"Field {11}")">
+                                <AutoComplete Options="_options" OnInput="OnInput" AllowFilter="false">
+                                    <ChildContent>
+                                        <AutoCompleteSearch Placeholder="input here" @bind-Value="@_value" OnSearch="OnDialogSearch"/>
+                                    </ChildContent>
+                                    <OptionTemplate Context="option">
+                                        <AutoCompleteOption Style="display: flex;" Value="@option.Value.Category">
+                                            Found @option.Value.Title on
+                                            <a style=" flex: auto; text-overflow: ellipsis; overflow: hidden;"
+                                               href="https://s.taobao.com/search?q=@(option.Value.Title)"
+                                               target="_blank"
+                                               rel="noopener noreferrer">
+                                                @option.Value.Category
+                                            </a>
+                                            <span style="flex: none;">@option.Value.Count results</span>
+                                        </AutoCompleteOption>
+                                    </OptionTemplate>
+                                </AutoComplete>
+                            </FormItem>
+                        </GridCol>                    
+                    </Row>
+                    <Row>
+                        <GridCol Span="24" Style="text-align:right;">
+                            <Button Type="primary" HtmlType="submit">Search</Button>
+                            <Button Style="margin: 0 8px;" OnClick="()=>{_form?.Reset();}">Clear</Button>
+                            <a style="font-size:12px" @onclick="()=>{_expand=!_expand;}">
+                                <Icon Type="@(_expand?"up":"down")"></Icon>  Collapse
+                            </a>
+                        </GridCol>
+                    </Row>
+                </Form>
+            </div>
+        </Panel>
+    </Collapse>
+
+    <br/>
+
+    <div>
+        <RadioGroup @bind-Value="_selectionType">
+            <Radio Value="@("checkbox")">Checkbox</Radio>
+            <Radio Value="@("radio")">radio</Radio>
+        </RadioGroup>
+
+        <h5>
+            selections: 
+            @if (_selectedRows != null)
+            {
+                @foreach (var selected in _selectedRows)
+                {
+                    <Tag @key="selected" Closable OnClose="e=>RemoveSelection(selected.Name)">@selected.Name</Tag>
+                }
+                <Button Danger Size="small" OnClick="@(e => { _table.SetSelection(null); })">Clear</Button>
+            }
+        </h5>
+
+        <Table @ref="_table" DataSource="@_data" @bind-SelectedRows="_selectedRows" RowSelectable="@(x => x.Name!="Disabled User")">
+            <Selection Key="@context.Name" Type="@_selectionType" Disabled="@(context.Name == "Disabled User")"/>
+            <PropertyColumn Property="c=>c.Name">
+                <a @onclick="OnChange">@context.Name</a>
+            </PropertyColumn>
+            <PropertyColumn Property="c=>c.Age" />
+            <PropertyColumn Property="c=>c.Address" />
+        </Table>
+    </div>
+</JComponentLayout>

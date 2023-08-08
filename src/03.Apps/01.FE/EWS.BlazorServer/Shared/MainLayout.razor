@@ -1,0 +1,46 @@
+﻿@inherits LayoutComponentBase
+
+<AuthorizeView>
+    <NotAuthorized>
+        @Body
+    </NotAuthorized>
+    <Authorized>
+        @if (_isPrint)
+        {
+            <JPrintBody>
+                <CascadingValue Value="this">
+                    @Body
+                </CascadingValue>
+            </JPrintBody>   
+        }
+        else
+        {
+            <MainBody>
+                <CascadingValue Value="this">
+                    @Body
+                </CascadingValue>
+            </MainBody>
+        }
+    </Authorized>
+</AuthorizeView>
+
+
+
+@code {
+    [Inject] private NavigationManager _navigationManager { get; set; }
+    [Inject] private ILogger<MainLayout> _logger { get; set; }
+    
+    private bool _isPrint;
+
+    protected override void OnInitialized()
+    {
+         _isPrint = this._navigationManager.Uri.Contains("print");
+        _logger.LogInformation("Navigate uri : {URI}", this._navigationManager.Uri);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+    }
+
+}

@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>disable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\01.Core\EWS.Infrastructure\EWS.Infrastructure.csproj" />
+      <ProjectReference Include="..\..\1.Entity\EWS.Entity.Db\EWS.Entity.Db.csproj" />
+      <ProjectReference Include="..\EWS.Domain\EWS.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Account\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="StackExchange.Redis" Version="2.6.96" />
+    </ItemGroup>
+
+    
+</Project>

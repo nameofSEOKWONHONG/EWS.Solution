@@ -1,0 +1,11 @@
+﻿@using EWS.BlazorWasm.Base
+
+<Spin Indicator=_antIcon Style="display: flex; justify-content: center; align-items: center; margin: 200px 0px 0px 0px;" Spinning="SpinLayoutService.Loading" Size="large">
+    @ChildContent
+</Spin>
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Inject] private ISpinLayoutService SpinLayoutService { get; set; }
+    private RenderFragment _antIcon = @<Icon Type="loading" Theme="outline" Style="font-size: 50px;" Spin/>;
+}

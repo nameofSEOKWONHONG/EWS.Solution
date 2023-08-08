@@ -1,0 +1,78 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Components.Web
+@namespace EWS.BlazorServer.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Smart Admin</title>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=1.0, user-scalable=0"/>
+    <base href="~/"/>
+    <link rel="icon" type="image/png" href="favicon.png"/>
+    <link href="./css/ant-design-blazor.css" rel="stylesheet"/>
+    @* <link rel="stylesheet" href="./css/bootstrap/bootstrap.min.css" /> *@
+    <link href="./css/ant_template.styles.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="./css/site.css"/>
+    <component type="typeof(HeadOutlet)" render-mode="WebAssembly"/>
+</head>
+<body>
+<component type="typeof(App)" render-mode="Server"/>
+
+<div id="blazor-error-ui">
+    <environment include="Staging,Production">
+        An error has occurred. This application may no longer respond until reloaded.
+    </environment>
+    <environment include="Development">
+        An unhandled exception has occurred. See browser dev tools for details.
+    </environment>
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+<script src="_content/AntDesign/js/ant-design-blazor.js"></script>
+<script src="./release./mylib.js"></script>
+<script src="js/file.js"></script>
+<script src="js/scroll.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+<script src="_framework/blazor.server.js"></script>
+<script type="text/javascript">
+    window.clearCache = () => {
+        sessionStorage.clear();
+        localStorage.clear();
+        caches.keys().then(keys => {
+            keys.forEach(key => caches.delete(key))
+        });
+        indexedDB.databases().then(dbs => {
+            dbs.forEach(db => indexedDB.deleteDatabase(db.name))
+        });
+        location.reload();
+    }
+    window.blazorCulture = {
+        get: () => window.localStorage['cultureInfo'],
+        set: (value) => window.localStorage['cultureInfo'] = value
+    };
+    window.addEventListener('load', function(e) {
+        
+    });
+    window.addEventListener('unload', function (e) {
+        //window.localStorage.removeItem('authToken');
+        //window.localStorage.removeItem('refreshToken');
+    });
+    
+    function readExcel() {
+        //todo : file open
+        
+        //var excel = new ExcelJS.Workbook();
+        
+        // read excel
+        
+        // return bytes or json string;
+    }
+</script>
+
+</body>
+</html>

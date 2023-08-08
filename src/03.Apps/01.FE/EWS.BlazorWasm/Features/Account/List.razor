@@ -1,0 +1,49 @@
+﻿@using eXtensionSharp
+@using EWS.Domain.Example
+@using EWS.Domain.Account
+@inherits EWS.BlazorWasm.Base.JComponent<List, EWS.BlazorWasm.Base.JDlgOptions<bool>, UserResult>
+
+<JComponentLayout>
+    <Table TItem="UserResult"
+           DataSource="@_users"
+           Loading="_users == null"
+           ScrollX="1500px"
+           ScrollY="800px"
+           Size="TableSize.Small"
+           OnChange="OnChange<UserResult>"
+           Total="@Total"
+           PaginationPosition="@DefaultPagingPosition"
+           RowClassName="@(x => x.Data.RowClass)"
+           @bind-PageSize="DefaultPageSize"
+           @bind-SelectedRows="SelectedRows"
+           OnRowClick="OnRowClick"
+           RemoteDataSource
+           Bordered
+           @ref="_table">
+        <ChildContent>
+            <Selection Width="40px" Fixed="left" Key="@(context.Id.xValue<string>())" Type="@this.DlgOptions.SelectRowType"/>
+            <PropertyColumn Property="m => m.Id" Width="40px" Sortable>
+                <a>@context.Id</a>
+            </PropertyColumn>
+            <PropertyColumn Property="m => m.FirstName" Width="120px" />
+            <PropertyColumn Property="m => m.LastName" Width="80px" />
+            <PropertyColumn Property="m => m.Email" Width="100px"/>
+            <PropertyColumn Property="m => m.EmailConfirm" Width="40px">
+                <Switch @bind-Value="@context.EmailConfirm" Disabled="true"></Switch>
+            </PropertyColumn>
+            <PropertyColumn Property="m => m.PhoneNumber" Width="100px"/>
+            <PropertyColumn Property="m => m.PhoneNumberConfirmed" Width="40px">
+                <Switch @bind-Value="@context.PhoneNumberConfirmed" Disabled="true"></Switch>
+            </PropertyColumn>
+            <PropertyColumn Property="m => m.AccessFailedCount" Width="100px"/>
+        </ChildContent>
+        <PaginationTemplate>
+            <Pagination Class="@(context.PaginationClass + " my-custom-pagination")"
+                        Total="context.Total"
+                        PageSize="context.PageSize"
+                        Current="context.PageIndex"
+                        ShowSizeChanger
+                        OnChange="context.HandlePageChange"/>
+        </PaginationTemplate>
+    </Table>
+</JComponentLayout>

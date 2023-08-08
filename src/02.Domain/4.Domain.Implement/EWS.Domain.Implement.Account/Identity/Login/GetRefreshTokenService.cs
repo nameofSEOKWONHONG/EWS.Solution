@@ -1,0 +1,30 @@
+﻿using System.Security.Cryptography;
+using EWS.Domain.Abstraction.Account.Identity;
+using EWS.Entity;
+using EWS.Entity.Db;
+using EWS.Infrastructure.ServiceRouter.Abstract;
+using EWS.Infrastructure.Session.Abstract;
+using Microsoft.AspNetCore.Http;
+
+namespace EWS.Domain.Implement.Account.Identity;
+
+public class GetRefreshTokenService : ScopeServiceImpl<GetRefreshTokenService, User, string>, IGetRefreshTokenService
+{
+    public GetRefreshTokenService(IHttpContextAccessor accessor) : base(accessor)
+    {
+    }
+
+    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    {
+        return Task.FromResult(true);
+    }
+
+    public override async Task OnExecuteAsync(ISessionContext context)
+    {
+        var randomNumber = new byte[32];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        var refreshToken = Convert.ToBase64String(randomNumber);
+        this.Result = refreshToken;
+    }
+}

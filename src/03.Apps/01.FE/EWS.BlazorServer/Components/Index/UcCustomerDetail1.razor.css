@@ -1,0 +1,9 @@
+.ant-form-item-label {
+    width: 100%;          
+    background-color: #fafafa;
+    border: 1px solid #d9d9d9;
+    border-radius: inherit;        
+}
+.ant-form-item-label > label {
+    height: 100%;
+}

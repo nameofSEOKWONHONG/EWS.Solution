@@ -1,0 +1,50 @@
+﻿@page "/"
+
+@using EWS.BlazorWasm.Features.Index
+@inherits EWS.BlazorWasm.Base.JComponent<Index, EWS.BlazorWasm.Base.JDlgOptions<bool>, bool>
+
+<PageTitle>Index</PageTitle>
+
+<Tabs Type="@TabType.Line" @ref="_tabs">
+    <TabPane Key="1" Tab="List">
+        <UcCustomers OnChange='@(async() => await OnActiveTab("2"))' />
+    </TabPane>    
+    <TabPane Key="2" Tab="Detail">
+        <Tabs Type="@TabType.Card" Size="TabSize.Small">
+            <TabPane Key="1" Tab="ESE 기본 정보">
+                <UcCustomerDetail1/>
+            </TabPane>    
+            <TabPane Key="2" Tab="ESE 계좌 정보">
+                <UcCustomerDetail2/>
+            </TabPane>
+            <TabPane Key="3" Tab="계정 등급 관리">
+                <UcCustomerDetail1/>
+            </TabPane>
+            <TabPane Key="4" Tab="계정 관리">
+                <UcCustomerStatus/>
+            </TabPane>
+        </Tabs>
+    </TabPane>
+    <TabPane Key="4" Tab="Status">
+        <UcCustomerStatus/>
+    </TabPane>
+</Tabs>
+
+@code {
+    AntDesign.Tabs _tabs;
+    
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _tabs.ActiveKey = "1";
+        }
+        base.OnAfterRender(firstRender);
+    }
+
+    private Task OnActiveTab(string num)
+    {
+        _tabs.ActiveKey = num;
+        return Task.CompletedTask;
+    }
+}

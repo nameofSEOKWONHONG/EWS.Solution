@@ -1,0 +1,34 @@
+﻿<SimpleSelect DefaultValue="@DefaultValue" OnSelectedItemChanged="HandleChange">
+    <SelectOptions>
+        @foreach (var item in _values)
+        {
+            <SimpleSelectOption Value="@item.Value" Label="@item.Key"/>
+        }
+    </SelectOptions>
+</SimpleSelect>
+<Input @bind-Value="_value"/>
+<Input @bind-Value="_phoneNumber"></Input>
+
+@code {
+
+    [Parameter]
+    public string PhoneNumber { get; set; }
+    [Parameter] public string DefaultValue { get; set; }
+    private Dictionary<string, string> _values = new();
+    private string _value;
+    private string _phoneNumber;
+    
+    protected override void OnInitialized()
+    {
+        _values = new Dictionary<string, string>()
+        {
+            { "kr", "82" }
+        };
+        base.OnInitialized();
+    }
+
+    private void HandleChange(string value)
+    {
+        _value = value;
+    }
+}

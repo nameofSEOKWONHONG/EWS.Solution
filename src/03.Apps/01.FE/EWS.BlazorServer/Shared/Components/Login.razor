@@ -1,0 +1,87 @@
+﻿@page "/login"
+@using System.Text.Json
+@using EWS.BlazorServer.Shared.Authentication.Manager
+@using EWS.Domain.Identity
+@using eXtensionSharp
+@using Microsoft.AspNetCore.SignalR.Client
+
+@layout MainLayout
+@attribute [AllowAnonymous]
+
+@inject ITokenManager TokenManager;
+@inject NotificationService NotificationService;
+@inject HubConnection HubConnection;
+
+<Header style="background-color: lightgray;" Class="align-self-center">
+    <div class="text-start align-self-center">
+        <img src="./images/login/logo.png" alt="" style="width: 128px; height: 32px;"/>
+    </div>
+</Header>
+<Content>
+    <div style="display: flex; justify-content: center; align-items: center; height: 50vh;">
+        <Form Loading="loading"
+              Model="@_request"
+              OnFinish="OnFinish"
+              OnFinishFailed="OnFinishFailed"
+              LabelColSpan="6"
+              WrapperColSpan="24">
+            <FormItem Label="Tenant" Required="true" LabelAlign="AntLabelAlignType.Right">
+                <Input @bind-Value="@context.TenantId"/>
+            </FormItem>            
+            <FormItem Label="Email" Required="true" LabelAlign="AntLabelAlignType.Right">
+                <Input @bind-Value="@context.Email"/>
+            </FormItem>
+            <FormItem Label="Password" Required="false" LabelAlign="AntLabelAlignType.Right">
+                <InputPassword @bind-Value="@context.Password"/>
+            </FormItem>
+            <FormItem Class="text-end">
+                <Checkbox @bind-Value="context.RememberMe">Remember me</Checkbox>
+            </FormItem>
+            <FormItem>
+                <div class="text-end">
+                    <Button Type="@ButtonType.Primary" HtmlType="submit" style="font-size: 10px;">
+                        Submit
+                    </Button>
+                </div>
+            </FormItem>
+        </Form>
+    </div>
+</Content>
+<Footer>
+    
+</Footer>
+
+
+@code
+{
+    private bool loading = false;
+    private TokenRequest _request = new TokenRequest();
+    
+    
+    private async Task OnFinish(EditContext editContext)
+    {
+        Toggle(true);
+        await Task.Delay(500);
+        _request.ConnectionId = HubConnection.ConnectionId;
+        
+        var result = await TokenManager.Login(_request);
+        Toggle(false);
+        
+        if (result.Succeeded.xIsFalse())
+        {
+            await NotificationService.Error(new NotificationConfig()
+            {
+                Message = "Warning",
+                Description = result.Messages.xFirst()
+            });
+        }
+    }
+
+    private void OnFinishFailed(EditContext editContext)
+    {
+        Console.WriteLine(string.Join(',', editContext.GetValidationMessages()));
+        Console.WriteLine($"Failed:{JsonSerializer.Serialize(_request)}");
+    }
+    
+    void Toggle(bool value) => loading = value;    
+}

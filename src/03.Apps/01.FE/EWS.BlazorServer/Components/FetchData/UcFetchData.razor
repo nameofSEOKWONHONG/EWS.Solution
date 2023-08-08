@@ -1,0 +1,55 @@
+﻿@using EWS.Domain.Example
+@using System.Text.Json
+@using System.Transactions
+@using AntDesign
+@using AntDesign.TableModels
+@using eXtensionSharp
+
+@inherits EWS.BlazorShared.Base.JComponent<UcFetchData, EWS.BlazorShared.Base.JDlgOptions<bool>, IEnumerable<WeatherForecastResult>>
+
+<JComponentLayout>
+    @if (forecasts == null)
+    {
+        <p>
+            <em>@Localizer["LBL00001"].xValue("Loading...!")</em>
+        </p>
+    }
+    else
+    {
+        //Bordered TableLayout="fixed"
+        <Table TItem="WeatherForecastResult"
+               DataSource="@forecasts"
+               Loading="forecasts == null"
+               ScrollX="1500px"
+               ScrollY="800px"
+               Size="TableSize.Small"
+               OnChange="OnChange<WeatherForecastResult>"
+               Total="@Total"
+               PaginationPosition="@DefaultPagingPosition"
+               RowClassName="@(x => x.Data.RowClass)"
+               @bind-PageSize="DefaultPageSize"
+               @bind-SelectedRows="_selectedRows"
+               RemoteDataSource
+               Bordered
+               @ref="_table">
+            <ChildContent>
+                <Selection Width="40px" Fixed="left" Key="@(context.Id.xValue<string>())" Type="@this.DlgOptions.SelectRowType"/>
+                <PropertyColumn Property="m => m.Id" Width="140" Sortable/>
+                <PropertyColumn Property="m => m.Date" Width="140" >
+                    @(context.Date.xValue<string>())
+                </PropertyColumn>
+                <PropertyColumn Property="m => m.TemperatureC" Width="100"/>
+                <PropertyColumn Property="m => m.TemperatureF" Width="100"/>
+                <PropertyColumn Property="m => m.Summary"/>            
+            </ChildContent>
+            <PaginationTemplate>
+                <Pagination Class="@(context.PaginationClass + " my-custom-pagination")"
+                            Total="context.Total"
+                            PageSize="context.PageSize"
+                            Current="context.PageIndex"
+                            ShowSizeChanger
+                            OnChange="context.HandlePageChange"/>
+            </PaginationTemplate>
+        </Table>
+    }
+</JComponentLayout>

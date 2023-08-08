@@ -1,0 +1,45 @@
+﻿@inherits EWS.BlazorWasm.Base.JComponent<Detail, EWS.BlazorWasm.Base.JDlgOptions<bool>, EWS.Domain.Account.UserResult>
+
+<JComponentLayout>
+    <Form Model="@SelectedItem"
+          LabelCol="LabelCol"
+          WrapperCol="WrapperCol"
+          ValidateOnChange="@true"
+          OnFinish="@(async (e) => await OnFinish(e))"
+          OnFinishFailed="OnFinishFailed">
+        @* <FluentValidationValidator Validator="new CustomerDetailModelValidatorBase(Localizer)" /> *@
+        <FormItem Label="@nameof(SelectedItem.Id)">
+            <Input @bind-Value="@context.Id"/>
+        </FormItem>
+        <FormItem Label="@nameof(SelectedItem.FirstName)">
+            <Input @bind-Value="@context.FirstName"/>
+        </FormItem>
+        <FormItem Label="@nameof(SelectedItem.LastName)">
+            <Input @bind-Value="@context.LastName"/>
+        </FormItem>
+        <FormItem Label="@nameof(SelectedItem.UserName)">
+            <Input @bind-Value="@context.UserName"/>
+        </FormItem>
+        <FormItem Label="@nameof(SelectedItem.Email)">
+            <Input @bind-Value="@context.Email"/>
+        </FormItem>
+        <FormItem Label="@nameof(SelectedItem.EmailConfirm)">
+            <Switch @bind-Value="@context.EmailConfirm"/>
+        </FormItem>
+        <FormItem Label="@nameof(SelectedItem.PhoneNumber)">
+            <Input @bind-Value="@context.PhoneNumber"/>
+        </FormItem>
+        <FormItem Label="@nameof(SelectedItem.PhoneNumberConfirmed)">
+            <Switch @bind-Value="@context.PhoneNumberConfirmed"/>
+        </FormItem>
+        <FormItem Label="@nameof(SelectedItem.AccessFailedCount)">
+            <Input @bind-Value="@context.AccessFailedCount"/>
+        </FormItem>
+        <Divider></Divider>
+        <FormItem WrapperColOffset="8" WrapperColSpan="16">
+            <Button HtmlType="submit">
+                Submit
+            </Button>
+        </FormItem>
+    </Form>
+</JComponentLayout>

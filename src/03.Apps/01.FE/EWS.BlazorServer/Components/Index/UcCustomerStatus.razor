@@ -1,0 +1,147 @@
+﻿@using eXtensionSharp
+
+@inherits EWS.BlazorShared.Base.JComponent<UcCustomerStatus, EWS.BlazorShared.Base.JDlgOptions<bool>, bool>
+
+<JComponentLayout>
+@* Bordered TableLayout="fixed" *@
+<Table TItem="ItemData" 
+       DataSource="_listOfData" 
+       RowClassName="@(_ => "editable-row")" 
+       ScrollX="1500px"
+       ScrollY="610px"
+       Bordered>
+    <ChildContent Context="data">
+        <Selection Width="40px" Fixed="left" Key="@(data.Id.xValue<string>())"/>
+        <Column TData="string" Title="Name" Width="300px" Fixed="left">
+            @if (!_editCache[data.Id].edit)
+            {
+                @data.Name
+            }
+            else
+            {
+                <Input @bind-Value="_editCache[data.Id].data.Name"/>
+            }
+        </Column>
+        <Column TData="string" Title="Age" Width="300px">
+            @if (!_editCache[data.Id].edit)
+            {
+                @data.Age
+            }
+            else
+            {
+                <Input @bind-Value="_editCache[data.Id].data.Age"/>
+            }
+        </Column>
+        <Column TData="string" Title="Address" Width="300px">
+            @if (!_editCache[data.Id].edit)
+            {
+                @data.Address
+            }
+            else
+            {
+                <Input @bind-Value="_editCache[data.Id].data.Address"/>
+            }
+        </Column>
+        <Column TData="DateTime" Title="Date1" Width="300px">
+            @if (!_editCache[data.Id].edit)
+            {
+                @data.Date
+            }
+            else
+            {
+                <DatePicker TValue="DateTime" Picker="@DatePickerType.Date" @bind-Value="_editCache[data.Id].data.Date"/>
+                <Button>click</Button>
+                //<Input @bind-Value="editCache[data.Id].data.Date" />
+            }
+        </Column>
+        <Column TData="DateTime" Title="Date2" Width="300px">
+            @if (!_editCache[data.Id].edit)
+            {
+                @data.Date
+            }
+            else
+            {
+                <DatePicker TValue="DateTime" Picker="@DatePickerType.Date" @bind-Value="_editCache[data.Id].data.Date"/>
+                <Button>click</Button>
+                //<Input @bind-Value="editCache[data.Id].data.Date" />
+            }
+        </Column>
+        <Column TData="DateTime" Title="Date3" Width="300px">
+            @if (!_editCache[data.Id].edit)
+            {
+                @data.Date
+            }
+            else
+            {
+                <DatePicker TValue="DateTime" Picker="@DatePickerType.Date" @bind-Value="_editCache[data.Id].data.Date"/>
+                <Button>click</Button>
+                //<Input @bind-Value="editCache[data.Id].data.Date" />
+            }
+        </Column>
+        <Column TData="DateTime" Title="Date4" Width="300px">
+            @if (!_editCache[data.Id].edit)
+            {
+                @data.Date
+            }
+            else
+            {
+                <DatePicker TValue="DateTime" Picker="@DatePickerType.Date" @bind-Value="_editCache[data.Id].data.Date"/>
+                <Button>click</Button>
+                //<Input @bind-Value="editCache[data.Id].data.Date" />
+            }
+        </Column>
+        <Column TData="DateTime" Title="Date5" Width="300px">
+            @if (!_editCache[data.Id].edit)
+            {
+                @data.Date
+            }
+            else
+            {
+                <DatePicker TValue="DateTime" Picker="@DatePickerType.Date" @bind-Value="_editCache[data.Id].data.Date"/>
+                <Button OnClick="SetModal2Visible">click</Button>
+                //<Input @bind-Value="editCache[data.Id].data.Date" />
+            }
+        </Column>        
+        <ActionColumn Title="Action" Width="300px">
+            @if (!_editCache[data.Id].edit)
+            {
+                <a @onclick="() => StartEdit(data.Id)" class="save">Edit</a>
+            }
+            else
+            {
+                <a @onclick="() => SaveEdit(data.Id)" class="save">Save</a>
+                <Popconfirm Title="Sure to cancel?"
+                            OnConfirm="() => CancelEdit(data.Id)"
+                            OkText="Yes"
+                            CancelText="No">
+                    <a class="save">Cancel</a>
+                </Popconfirm>
+            }
+        </ActionColumn>
+    </ChildContent>
+</Table>
+
+<div>
+    <Modal Title="@("20px to Top")"
+           Style="top: 20px"
+           Visible="_visible1"
+           OnOk="@HideModal1"
+           OnCancel="@HideModal1"
+    >
+        <p>some contents...</p>
+        <p>some contents...</p>
+        <p>some contents...</p>
+    </Modal>
+    <br />
+    <Modal Title="@("Vertically centered modal dialog")"
+           Centered="true"
+           Visible="_visible2"
+           OnOk="@HideModal2"
+           OnCancel="@HideModal2"
+    >
+        <p>some contents...</p>
+        <p>some contents...</p>
+        <p>some contents...</p>
+    </Modal>
+</div>
+</JComponentLayout>

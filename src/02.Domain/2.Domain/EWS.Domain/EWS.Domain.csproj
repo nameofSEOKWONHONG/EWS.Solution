@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Ardalis.SmartEnum" Version="7.0.0" />
+      <PackageReference Include="Ardalis.SmartEnum.SystemTextJson" Version="7.0.0" />      
+      <PackageReference Include="FluentValidation" Version="11.5.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\..\..\eXtensionSharp\src\eXtensionSharp.csproj" />
+      <ProjectReference Include="..\..\..\01.Core\EWS.Application\EWS.Application.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Database\Migration\" />
+      <Folder Include="Database\PlainText\" />
+    </ItemGroup>
+
+</Project>

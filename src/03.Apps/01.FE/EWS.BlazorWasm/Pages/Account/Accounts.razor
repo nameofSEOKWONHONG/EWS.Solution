@@ -1,0 +1,16 @@
+﻿@page "/accounts"
+
+@inherits EWS.BlazorWasm.Base.JPageComponent<bool, EWS.Domain.Account.UserResult>
+<PageTitle>Accounts</PageTitle>
+
+<Tabs Type="@TabType.Line" @ref="Tabs">
+    <TabPane Key="1" Tab="List">
+        <EWS.BlazorWasm.Features.Account.List OnTabChange='((item) => OnTabChanged("2", item))'/>
+    </TabPane>    
+    <TabPane Key="2" Tab="Detail">
+        <EWS.BlazorWasm.Features.Account.Detail SelectedItem="SelectedItem"/>
+    </TabPane>
+    <TabPane Key="4" Tab="Status">
+        <EWS.BlazorWasm.Features.Account.Summary/>
+    </TabPane>
+</Tabs>

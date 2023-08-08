@@ -1,0 +1,76 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <Nullable>disable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <DocumentationFile>bin\Debug\EWS.WebApi.Server.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DocumentationFile>bin\Release\EWS.WebApi.Server.xml</DocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="FluentValidation" Version="11.5.2" />
+        <PackageReference Include="Hangfire" Version="1.8.4" />
+        <PackageReference Include="Hangfire.AspNetCore" Version="1.8.4" />
+        <PackageReference Include="Hangfire.Core" Version="1.8.4" />
+        <PackageReference Include="Hangfire.MemoryStorage" Version="1.8.0" />
+        <PackageReference Include="Hangfire.NetCore" Version="1.8.4" />
+        <PackageReference Include="Hangfire.SqlServer" Version="1.8.4" />
+        <PackageReference Include="Jering.Javascript.NodeJS" Version="6.3.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.9" /> 
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.9" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.9" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.9" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.9">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="7.0.9" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+        <PackageReference Include="MimeKit" Version="4.1.0" />
+        <PackageReference Include="Scrutor" Version="4.2.2" />
+        <PackageReference Include="Serilog" Version="3.0.1" />
+        <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
+        <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
+        <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
+        <PackageReference Include="Serilog.Settings.Configuration" Version="7.0.0" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+        <PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
+        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+        <PackageReference Include="ZString" Version="2.5.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\02.Domain\1.Entity\EWS.Entity.Db\EWS.Entity.Db.csproj" />
+      <ProjectReference Include="..\..\..\02.Domain\3.Domain.Infra\EWS.Domain.Infra\EWS.Domain.Infra.csproj" />
+      <ProjectReference Include="..\..\..\02.Domain\4.Domain.Implement\EWS.Domain.Implement.Account\EWS.Domain.Implement.Account.csproj" />
+      <ProjectReference Include="..\..\..\02.Domain\4.Domain.Implement\EWS.Domain.Implement.Common\EWS.Domain.Implement.Common.csproj" />
+      <ProjectReference Include="..\..\..\02.Domain\4.Domain.Implement\EWS.Domain.Implement.Example\EWS.Domain.Implement.Example.csproj" />
+      <ProjectReference Include="..\..\01.FE\EWS.BlazorWasm\EWS.BlazorWasm.csproj" />      
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Logs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="Logs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Remove="Logs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Logs\**" />
+    </ItemGroup>
+</Project>

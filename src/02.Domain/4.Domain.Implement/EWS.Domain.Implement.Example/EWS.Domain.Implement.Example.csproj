@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\1.Entity\EWS.Entity.Db\EWS.Entity.Db.csproj" />
+      <ProjectReference Include="..\..\2.Domain\EWS.Domain.Abstraction\EWS.Domain.Abstraction.csproj" />
+      <ProjectReference Include="..\..\3.Domain.Infra\EWS.Domain.Infra\EWS.Domain.Infra.csproj" />      
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Microsoft.AspNetCore.Http.Abstractions">
+        <HintPath>C:\Program Files\dotnet\shared\Microsoft.AspNetCore.App\7.0.7\Microsoft.AspNetCore.Http.Abstractions.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>        
+      <PackageReference Include="FluentValidation" Version="11.5.2" />
+    </ItemGroup>
+
+</Project>

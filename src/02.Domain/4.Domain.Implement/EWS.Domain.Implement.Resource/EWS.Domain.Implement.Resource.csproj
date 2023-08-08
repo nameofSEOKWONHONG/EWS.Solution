@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\01.Core\EWS.Infrastructure\EWS.Infrastructure.csproj" />
+      <ProjectReference Include="..\..\1.Entity\EWS.Entity\EWS.Entity.csproj" />
+      <ProjectReference Include="..\..\2.Domain\EWS.Domain\EWS.Domain.csproj" />
+      <ProjectReference Include="..\..\3.Domain.Infra\EWS.Domain.Infra\EWS.Domain.Infra.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Mapster" Version="7.3.0" />
+    </ItemGroup>
+
+</Project>

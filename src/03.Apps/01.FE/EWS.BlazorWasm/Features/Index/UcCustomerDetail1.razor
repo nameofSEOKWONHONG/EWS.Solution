@@ -1,0 +1,158 @@
+﻿@using Blazored.FluentValidation
+@using EWS.Domain.Example
+@using eXtensionSharp
+
+@inherits EWS.BlazorWasm.Base.JComponent<UcCustomerDetail1, EWS.BlazorWasm.Base.JDlgOptions<bool>, bool>
+
+<JComponentLayout>
+    <Form Model="@_model"
+          LabelCol="_labelCol"
+          WrapperCol="_wrapperCol"
+          ValidateOnChange="@true"
+          OnFinish="@(async (e) => await OnFinish(e))"
+          OnFinishFailed="OnFinishFailed">
+        <FluentValidationValidator Validator="new CustomerDetailModelValidatorBase(Localizer)" />
+        <FormItem Label="Form Size">
+            <RadioGroup @bind-Value="@context.Size">
+                <Radio RadioButton Value="@AntSizeLDSType.Small">Small</Radio>
+                <Radio RadioButton Value="@AntSizeLDSType.Default">Default</Radio>
+                <Radio RadioButton Value="@AntSizeLDSType.Large">Large</Radio>
+            </RadioGroup>
+        </FormItem>
+
+        <Divider Orientation="left">Basic</Divider>
+        <FormItem Label="Input">
+            <Input @bind-Value="@context.Input"/>
+        </FormItem>
+        <FormItem Label="InputArea">
+            <TextArea @bind-Value="@context.InputArea" />
+        </FormItem>
+        <FormItem Label="Cascader">
+            <Cascader @bind-Value="@context.Cascader" Options="_districts"/>
+        </FormItem>
+        <FormItem Label="DatePicker">
+            <DatePicker @bind-Value="@context.DatePicker"/>
+        </FormItem>
+        <FormItem Label="RangePicker">
+            <RangePicker @bind-Value="@context.RangePicker"/>
+        </FormItem>
+        <Divider></Divider>
+
+        <Divider Orientation="left">AddOn</Divider>
+        <FormItem Label="InputNumber">
+            <AntDesign.InputNumber @bind-Value="@context.Number"/>
+        </FormItem>
+        <FormItem Label="Switch">
+            <Switch @bind-Value="@context.Switch"/>
+        </FormItem>
+        <FormItem Label="Radio">
+            <RadioGroup @bind-Value="@context.Radio">
+                <Radio RadioButton Value="@("Hangzhou")">Hangzhou</Radio>
+                <Radio RadioButton Value="@("Shanghai")">Shanghai</Radio>
+                <Radio RadioButton Value="@("Beijing")">Beijing</Radio>
+                <Radio RadioButton Value="@("Chengdu")">Chengdu</Radio>
+            </RadioGroup>
+        </FormItem>
+        <FormItem Label="AutoComplete">
+            <AutoComplete @bind-Value="@context.AutoComplete" Options="@_autoCompleteOptions" Placeholder="Input here"/>
+        </FormItem>
+        <FormItem Label="Select">
+            <Select Mode="default"
+                    DataSource="@_persons"
+                    @bind-Value="@context.Name"
+                    LabelName="@nameof(Person.Name)"
+                    ValueName="@nameof(Person.Name)">
+            </Select>
+        </FormItem>
+        <FormItem Label="Multiselect">
+            <Select Mode="multiple"
+                    DataSource="@_persons"
+                    @bind-Values="@context.Names"
+                    LabelName="@nameof(Person.Name)"
+                    ValueName="@nameof(Person.Name)">
+            </Select>
+        </FormItem>
+        <Divider></Divider>
+        <FormItem WrapperColOffset="8" WrapperColSpan="16">
+            <Button HtmlType="submit">
+                Submit
+            </Button>
+        </FormItem>
+    </Form>
+</JComponentLayout>
+
+@code {
+
+private ColLayoutParam _labelCol = new ColLayoutParam 
+    { 
+        Xs = new EmbeddedProperty { Span = 24 },
+        Sm = new EmbeddedProperty { Span = 6 },
+    };
+
+    private ColLayoutParam _wrapperCol = new ColLayoutParam
+    {
+        Xs = new EmbeddedProperty { Span = 24 },
+        Sm = new EmbeddedProperty { Span = 14 },
+    };
+    private CustomerDetailModel _model = new CustomerDetailModel();
+    private List<CascaderNode> _districts;
+    private List<string> _autoCompleteOptions;
+
+    record Person(string Name);
+
+    private List<Person> _persons;
+
+    protected override Task OnViewDataAsync()
+    {
+        _districts = new List<CascaderNode>
+        {
+            new CascaderNode()
+            {
+                Value = "1",
+                Label = "Zhejianng",
+                Children = new []
+                {
+                    new CascaderNode {Value = "11", Label = "Hangzhou"},
+                    new CascaderNode {Value = "12", Label = "Wenzhou"},
+                }
+            },
+            new CascaderNode()
+            {
+                Value = "2",
+                Label = "Shanghai",
+            }
+        };      
+        _autoCompleteOptions = new List<string> { "Primary", "Junior", "Senior", "Undergraduate", "Master", "Doctor" };
+        _persons= new List<Person>
+        {
+            new Person("John"),
+            new Person("Lucy"),
+            new Person("Jack"),
+            new Person("Emily"),
+        };  
+        return base.OnViewDataAsync();
+    }
+
+    #region [function]
+
+    private async Task OnFinish(EditContext editContext)
+    {
+        var vaild = editContext.Validate();
+        if(vaild.xIsFalse()) return;
+        
+        this.ShowProgress();
+        await Task.Delay(3000);
+        Console.WriteLine($"Success:{_model.xToJson()}");
+        this.CloseProgress();
+        
+        await this.ShowMessageAsync("저장 되었습니다.");
+    }
+
+    private void OnFinishFailed(EditContext editContext)
+    {
+        Console.WriteLine($"Failed:{_model.xToJson()}"); 
+    }    
+
+    #endregion
+
+}

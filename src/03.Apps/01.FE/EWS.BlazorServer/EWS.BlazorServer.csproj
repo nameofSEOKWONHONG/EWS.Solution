@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <Nullable>disable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AntDesign" Version="0.15.3" />
+      <PackageReference Include="Blazored.FluentValidation" Version="2.1.0" />      
+      <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.9" />
+      <PackageReference Include="Scrutor" Version="4.2.2" />
+      <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Pages\Components\DemoInputForm.razor" />
+      <_ContentIncludedByDefault Remove="Pages\Components\DemoTable.razor" />
+      <_ContentIncludedByDefault Remove="Pages\Components\FetchComponent.razor" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\02.Domain\2.Domain\EWS.Domain\EWS.Domain.csproj" />
+    </ItemGroup>
+
+</Project>

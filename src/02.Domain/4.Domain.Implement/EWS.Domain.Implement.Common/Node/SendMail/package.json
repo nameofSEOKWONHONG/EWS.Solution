@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "sendmail": "^1.6.1",
+    "systeminformation": "^5.18.7"
+  }
+}

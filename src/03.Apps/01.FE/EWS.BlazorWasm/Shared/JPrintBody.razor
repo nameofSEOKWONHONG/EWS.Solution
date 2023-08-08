@@ -1,0 +1,13 @@
+﻿
+<div class="row m-2" style="margin: 10px;">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+}

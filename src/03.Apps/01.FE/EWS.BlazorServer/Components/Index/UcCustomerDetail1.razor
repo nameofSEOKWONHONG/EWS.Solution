@@ -1,0 +1,81 @@
+﻿@using Blazored.FluentValidation
+@using EWS.Domain.Example
+
+@inherits EWS.BlazorShared.Base.JComponent<UcCustomerDetail1, EWS.BlazorShared.Base.JDlgOptions<bool>, bool>
+
+<JComponentLayout>
+    <Form Model="@_model"
+          LabelCol="_labelCol"
+          WrapperCol="_wrapperCol"
+          ValidateOnChange="@true"
+          OnFinish="@(async (e) => await OnFinish(e))"
+          OnFinishFailed="OnFinishFailed">
+        <FluentValidationValidator Validator="new CustomerDetailModelValidatorBase(Localizer)" />
+        <FormItem Label="Form Size">
+            <RadioGroup @bind-Value="@context.Size">
+                <Radio RadioButton Value="@AntSizeLDSType.Small">Small</Radio>
+                <Radio RadioButton Value="@AntSizeLDSType.Default">Default</Radio>
+                <Radio RadioButton Value="@AntSizeLDSType.Large">Large</Radio>
+            </RadioGroup>
+        </FormItem>
+
+        <Divider Orientation="left">Basic</Divider>
+        <FormItem Label="Input">
+            <Input @bind-Value="@context.Input"/>
+        </FormItem>
+        <FormItem Label="InputArea">
+            <TextArea @bind-Value="@context.InputArea" />
+        </FormItem>
+        <FormItem Label="Cascader">
+            <Cascader @bind-Value="@context.Cascader" Options="_districts"/>
+        </FormItem>
+        <FormItem Label="DatePicker">
+            <DatePicker @bind-Value="@context.DatePicker"/>
+        </FormItem>
+        <FormItem Label="RangePicker">
+            <RangePicker @bind-Value="@context.RangePicker"/>
+        </FormItem>
+        <Divider></Divider>
+
+        <Divider Orientation="left">AddOn</Divider>
+        <FormItem Label="InputNumber">
+            <AntDesign.InputNumber @bind-Value="@context.Number"/>
+        </FormItem>
+        <FormItem Label="Switch">
+            <Switch @bind-Value="@context.Switch"/>
+        </FormItem>
+        <FormItem Label="Radio">
+            <RadioGroup @bind-Value="@context.Radio">
+                <Radio RadioButton Value="@("Hangzhou")">Hangzhou</Radio>
+                <Radio RadioButton Value="@("Shanghai")">Shanghai</Radio>
+                <Radio RadioButton Value="@("Beijing")">Beijing</Radio>
+                <Radio RadioButton Value="@("Chengdu")">Chengdu</Radio>
+            </RadioGroup>
+        </FormItem>
+        <FormItem Label="AutoComplete">
+            <AutoComplete @bind-Value="@context.AutoComplete" Options="@_autoCompleteOptions" Placeholder="Input here"/>
+        </FormItem>
+        <FormItem Label="Select">
+            <Select Mode="default"
+                    DataSource="@_persons"
+                    @bind-Value="@context.Name"
+                    LabelName="@nameof(Person.Name)"
+                    ValueName="@nameof(Person.Name)">
+            </Select>
+        </FormItem>
+        <FormItem Label="Multiselect">
+            <Select Mode="multiple"
+                    DataSource="@_persons"
+                    @bind-Values="@context.Names"
+                    LabelName="@nameof(Person.Name)"
+                    ValueName="@nameof(Person.Name)">
+            </Select>
+        </FormItem>
+        <Divider></Divider>
+        <FormItem WrapperColOffset="8" WrapperColSpan="16">
+            <Button HtmlType="submit">
+                Submit
+            </Button>
+        </FormItem>
+    </Form>
+</JComponentLayout>

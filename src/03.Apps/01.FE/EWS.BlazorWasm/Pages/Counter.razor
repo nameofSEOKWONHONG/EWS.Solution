@@ -1,0 +1,43 @@
+﻿@page "/counter"
+
+@using EWS.BlazorWasm.Base
+@using EWS.BlazorWasm.Features.FetchData
+
+@inject HubConnection Connection
+@inject IFetchDataManager Manager
+
+@inherits JComponent<Counter, JDlgOptions<bool>, bool>
+
+<JComponentLayout>
+    <PageTitle>Counter</PageTitle>
+
+    <h1>Counter</h1>
+
+    <p role="status">Current count: @currentCount</p>
+
+    <Button Type="@ButtonType.Primary" @onclick="@(async () => await IncrementCount())">Worker Demo</Button>
+</JComponentLayout>
+
+@code {
+    private int currentCount = 0;
+
+    private async Task IncrementCount()
+    {
+        await Connection.InvokeAsync("Hello");
+        var isOk = await this.ShowConfirmOkCancelAsync("Information", "Increment?", ConfirmIcon.Warning);
+        if (isOk)
+        {
+            await this.ShowConfirmAsync("Infomation", "증가 되었다.", ConfirmIcon.Info);
+            currentCount++;
+            
+            var dateTime = await this.InvokeAsync<string>("MyLib.GetCurrentTime", null);
+            await this.InvokeVoidAsync("alert", dateTime);
+            
+            this.ShowProgress();
+            await Manager.CallWorker(Connection.ConnectionId);
+            await this.ShowMessageAsync("Work in progress", ENUM_MESSAGE_TYPE.Info);
+            this.CloseProgress();
+        }
+    }
+
+}

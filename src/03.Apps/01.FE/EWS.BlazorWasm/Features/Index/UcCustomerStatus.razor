@@ -1,0 +1,249 @@
+﻿@using eXtensionSharp
+
+@inherits EWS.BlazorWasm.Base.JComponent<UcCustomerStatus, EWS.BlazorWasm.Base.JDlgOptions<bool>, bool>
+
+<JComponentLayout>
+    @* Bordered TableLayout="fixed" *@
+    <Table TItem="ItemData" 
+           DataSource="_listOfData" 
+           RowClassName="@(_ => "editable-row")" 
+           ScrollX="1500px"
+           ScrollY="600px"
+           Bordered>
+        <ChildContent Context="data">
+            <Selection Width="40px" Fixed="left" Key="@(data.Id.xValue<string>())"/>
+            <Column TData="string" Title="Name" Width="300px" Fixed="left">
+                @if (!_editCache[data.Id].edit)
+                {
+                    @data.Name
+                }
+                else
+                {
+                    <Input @bind-Value="_editCache[data.Id].data.Name"/>
+                }
+            </Column>
+            <Column TData="string" Title="Age" Width="300px">
+                @if (!_editCache[data.Id].edit)
+                {
+                    @data.Age
+                }
+                else
+                {
+                    <Input @bind-Value="_editCache[data.Id].data.Age"/>
+                }
+            </Column>
+            <Column TData="string" Title="Address" Width="300px">
+                @if (!_editCache[data.Id].edit)
+                {
+                    @data.Address
+                }
+                else
+                {
+                    <Input @bind-Value="_editCache[data.Id].data.Address"/>
+                }
+            </Column>
+            <Column TData="DateTime" Title="Date1" Width="300px">
+                @if (!_editCache[data.Id].edit)
+                {
+                    @data.Date
+                }
+                else
+                {
+                    <DatePicker TValue="DateTime" Picker="@DatePickerType.Date" @bind-Value="_editCache[data.Id].data.Date"/>
+                    <Button>click</Button>
+                    //<Input @bind-Value="editCache[data.Id].data.Date" />
+                }
+            </Column>
+            <Column TData="DateTime" Title="Date2" Width="300px">
+                @if (!_editCache[data.Id].edit)
+                {
+                    @data.Date
+                }
+                else
+                {
+                    <DatePicker TValue="DateTime" Picker="@DatePickerType.Date" @bind-Value="_editCache[data.Id].data.Date"/>
+                    <Button>click</Button>
+                    //<Input @bind-Value="editCache[data.Id].data.Date" />
+                }
+            </Column>
+            <Column TData="DateTime" Title="Date3" Width="300px">
+                @if (!_editCache[data.Id].edit)
+                {
+                    @data.Date
+                }
+                else
+                {
+                    <DatePicker TValue="DateTime" Picker="@DatePickerType.Date" @bind-Value="_editCache[data.Id].data.Date"/>
+                    <Button>click</Button>
+                    //<Input @bind-Value="editCache[data.Id].data.Date" />
+                }
+            </Column>
+            <Column TData="DateTime" Title="Date4" Width="300px">
+                @if (!_editCache[data.Id].edit)
+                {
+                    @data.Date
+                }
+                else
+                {
+                    <DatePicker TValue="DateTime" Picker="@DatePickerType.Date" @bind-Value="_editCache[data.Id].data.Date"/>
+                    <Button>click</Button>
+                    //<Input @bind-Value="editCache[data.Id].data.Date" />
+                }
+            </Column>
+            <Column TData="DateTime" Title="Date5" Width="300px">
+                @if (!_editCache[data.Id].edit)
+                {
+                    @data.Date
+                }
+                else
+                {
+                    <DatePicker TValue="DateTime" Picker="@DatePickerType.Date" @bind-Value="_editCache[data.Id].data.Date"/>
+                    <Button OnClick="SetModal2Visible">click</Button>
+                    //<Input @bind-Value="editCache[data.Id].data.Date" />
+                }
+            </Column>        
+            <ActionColumn Title="Action" Width="300px">
+                @if (!_editCache[data.Id].edit)
+                {
+                    <a @onclick="() => StartEdit(data.Id)" class="save">Edit</a>
+                }
+                else
+                {
+                    <a @onclick="() => SaveEdit(data.Id)" class="save">Save</a>
+                    <Popconfirm Title="Sure to cancel?"
+                                OnConfirm="() => CancelEdit(data.Id)"
+                                OkText="Yes"
+                                CancelText="No">
+                        <a class="save">Cancel</a>
+                    </Popconfirm>
+                }
+            </ActionColumn>
+        </ChildContent>
+    </Table>
+
+    <div>
+        <Modal Title="@("20px to Top")"
+               Style="top: 20px"
+               Visible="_visible1"
+               OnOk="@HideModal1"
+               OnCancel="@HideModal1"
+        >
+            <p>some contents...</p>
+            <p>some contents...</p>
+            <p>some contents...</p>
+        </Modal>
+        <br />
+        <Modal Title="@("Vertically centered modal dialog")"
+               Centered="true"
+               Visible="_visible2"
+               OnOk="@HideModal2"
+               OnCancel="@HideModal2"
+        >
+            <p>some contents...</p>
+            <p>some contents...</p>
+            <p>some contents...</p>
+        </Modal>
+    </div>
+</JComponentLayout>
+
+@code {
+
+    private IDictionary<string, (bool edit, ItemData data)> _editCache = new Dictionary<string, (bool edit, ItemData data)>();
+    private List<ItemData> _listOfData = new();
+    private string _editId;
+    private string _title = "BasicModal";
+    private bool _visible1 = false;
+    private bool _visible2 = false;
+    private int _i = 0;
+    
+
+    protected override Task OnPermissionAsync()
+    {
+        return base.OnPermissionAsync();
+    }
+
+    protected override Task OnViewDataAsync()
+    {
+        return base.OnViewDataAsync();
+    }
+
+    protected override async Task OnPageDataAsync()
+    {
+        this.ShowProgress();
+        await Task.Delay(1000);
+        _listOfData = Enumerable.Range(0, 100).Select(_i => new ItemData { Id = $"{_i}", Name = $"Edrward {_i}", Age = 32, Address = $"London Park no. {_i}", Date = DateTime.Now}).ToList();
+        _listOfData.ForEach(item =>
+        {
+            _editCache[item.Id] = (false, item);
+        });
+        this.CloseProgress();
+    }
+
+    #region [functions]
+
+    private void StartEdit(string id)
+    {
+        var data = _editCache[id];
+        _editCache[id] = (true, data.data with { }); // add a copy in cache
+    }
+
+    private void CancelEdit(string id)
+    {
+        var data = _listOfData.FirstOrDefault(item => item.Id == id);
+        _editCache[id] = (false, data); // recovery
+    }
+
+    private void SaveEdit(string id)
+    {
+        var index = _listOfData.FindIndex(item => item.Id == id);
+        _listOfData[index] = _editCache[id].data; // apply the copy to data source
+        _editCache[id] = (false, _listOfData[index]); // don't affect rows in editing
+    }
+    
+    private void HideModal1()
+    {
+        if (_visible1)
+        {
+            _visible1 = false;
+        }
+    }
+
+    private void HideModal2()
+    {
+        if (_visible2)
+        {
+            _visible2 = false;
+        }
+    }
+
+    private void SetModal1Visible()
+    {
+        _visible1 = true;
+    }
+    
+    private async Task SetModal2Visible()
+    {
+        //_visible2 = true;
+        await Click();
+    }
+    
+    private async Task Click()
+    {
+        // await this.ShowDialog<UcFetchData, JDlgOptions<bool>, IEnumerable<WeatherForecastResult>>(new JDlgOptions<bool>(), result =>
+        // {
+        //     Logger.LogInformation("UcFetchData result : {Result}", result.xToJson());
+        // });
+    }
+
+    #endregion
+    
+    internal record ItemData
+    {
+        public string Id { get; set; }
+        public string Name { get; set; } 
+        public int Age { get; set; }
+        public string Address { get; set; }
+        public DateTime Date { get; set; }
+    };    
+
+}

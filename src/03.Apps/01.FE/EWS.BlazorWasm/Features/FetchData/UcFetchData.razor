@@ -1,0 +1,128 @@
+﻿@using EWS.Domain.Example
+@using System.Text.Json
+@using System.Transactions
+@using AntDesign
+@using AntDesign.TableModels
+@using EWS.Application.Wrapper
+@using eXtensionSharp
+
+@inject IFetchDataManager Manager
+
+@inherits EWS.BlazorWasm.Base.JComponent<UcFetchData, EWS.BlazorWasm.Base.JDlgOptions<bool>, IEnumerable<WeatherForecastResult>>
+
+<JComponentLayout>
+    @if (forecasts == null)
+    {
+        <p>
+            <em>@Localizer["LBL00001"].xValue("Loading...!")</em>
+        </p>
+    }
+    else
+    {
+        //Bordered TableLayout="fixed"
+        <Table TItem="WeatherForecastResult"
+               DataSource="@forecasts"
+               Loading="forecasts == null"
+               ScrollX="1500px"
+               ScrollY="800px"
+               Size="TableSize.Small"
+               OnChange="OnChange<WeatherForecastResult>"
+               Total="@Total"
+               PaginationPosition="@DefaultPagingPosition"
+               RowClassName="@(x => x.Data.RowClass)"
+               @bind-PageSize="DefaultPageSize"
+               @bind-SelectedRows="_selectedRows"
+               RemoteDataSource
+               Bordered
+               @ref="_table">
+            <ChildContent>
+                <Selection Width="40px" Fixed="left" Key="@(context.Id.xValue<string>())" Type="@this.DlgOptions.SelectRowType"/>
+                <PropertyColumn Property="m => m.Id" Width="140" Sortable/>
+                <PropertyColumn Property="m => m.Date" Width="140" >
+                    @(context.Date.xValue<string>())
+                </PropertyColumn>
+                <PropertyColumn Property="m => m.TemperatureC" Width="100"/>
+                <PropertyColumn Property="m => m.TemperatureF" Width="100"/>
+                <PropertyColumn Property="m => m.Summary"/>            
+            </ChildContent>
+            <PaginationTemplate>
+                <Pagination Class="@(context.PaginationClass + " my-custom-pagination")"
+                            Total="context.Total"
+                            PageSize="context.PageSize"
+                            Current="context.PageIndex"
+                            ShowSizeChanger
+                            OnChange="context.HandlePageChange"/>
+            </PaginationTemplate>
+        </Table>
+    }
+</JComponentLayout>
+
+@code {
+
+private Table<WeatherForecastResult> _table;
+    private WeatherForecastResult[] forecasts;
+    private IEnumerable<WeatherForecastResult> _selectedRows;
+
+    protected override Task OnViewDataAsync()
+    {
+        Manager.Write();   
+        return base.OnViewDataAsync();
+    }
+    
+    protected override async Task OnPageDataAsync()
+    {
+        await OnSearchPaging<WeatherForecastResult>(new QueryModel<WeatherForecastResult>(1, 10, 1, null, null), null);
+    }
+
+    public override async Task OnFeedbackOkAsync(ModalClosingEventArgs args)
+    {
+        if (FeedbackRef is ConfirmRef confirmRef)
+        {
+            confirmRef.Config.OkButtonProps.Loading = true;
+            await confirmRef.UpdateConfigAsync();
+        }
+        else if (FeedbackRef is ModalRef modalRef)
+        {
+            modalRef.Config.ConfirmLoading = true;
+            await modalRef.UpdateConfigAsync();
+        }
+        
+        await Task.Delay(1000);
+        // only the input's value equals the initialized value, the OK button will close the confirm dialog box
+
+        if (_selectedRows?.Count() <= 0)
+        {
+            args.Cancel = true;
+        }
+        else
+        {
+            // method 1(not recommended): await (FeedbackRef as ConfirmRef<string>)!.OkAsync(value);
+            // method 2: await (FeedbackRef as IOkCancelRef<string>)!.OkAsync(value);
+            await (FeedbackRef as IOkCancelRef<IEnumerable<WeatherForecastResult>>)!.OkAsync(_selectedRows);            
+        }
+        
+        await base.OnFeedbackOkAsync(args);
+    }
+
+    #region [functions]
+
+    private bool Filter(object v, object n)
+    {
+        return true;
+    }
+
+    protected override Task OnSearchPaging<T>(QueryModel<T> query, Func<int, int, string, string, Task<IPaginatedResult>> callback)
+    {
+        callback = async (index, size, sort, orderBy ) =>
+        {
+            var result = await this.Manager.GetAll<WeatherForecastResult>($"WeatherForecast/GetAll?pageSize={size}&pageNumber={index}&sort={sort}&orderby={orderBy}", null);
+            forecasts = result.Data.ToArray();
+            return result;
+        };
+        
+        return base.OnSearchPaging(query, callback);
+    }
+
+    #endregion
+
+}

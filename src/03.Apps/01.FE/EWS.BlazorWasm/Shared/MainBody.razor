@@ -1,0 +1,242 @@
+﻿@using eXtensionSharp
+
+@inject HubConnection Connection
+@inject ILogger<MainBody> Logger
+@inject INotificationService NotificationService
+@inject NavigationManager NavigationManager
+
+@inherits LayoutComponentBase
+
+<PageTitle>EWS.Wasm</PageTitle>
+
+<Layout>
+    <Sider @bind-Collapsed=@_collapsed NoTrigger OnCollapse="OnCollapse"> n
+        <div class="logo"></div>
+
+        <Menu Mode="MenuMode.Inline" 
+              OnMenuItemClicked="HandleClick"
+              DefaultSelectedKeys=@(new[]{"1"})
+              SelectedKeys=@(new []{_current})
+              Theme="MenuTheme.Dark">
+            <MenuItem Key="1" RouterLink="/">
+                <Icon Component="@CustomIcons.Materail.Container" Theme="outline"/>
+                <span>Customer</span>
+            </MenuItem>
+            <MenuItem Key="2" RouterLink="/counter">
+                <Icon Component="@CustomIcons.Materail.Truck" Theme="outline"/>
+                <span>Counter</span>
+            </MenuItem>
+            <MenuItem Key="3" RouterLink="/fetchdata">
+                <Icon Component="@CustomIcons.Materail.Ferry" Theme="outline"/>
+                <span>Fetch Data</span>
+            </MenuItem>
+            <MenuItem Key="4" RouterLink="/accounts">
+                <Icon Type="user" Theme="outline"/>
+                <span>Accounts</span>
+            </MenuItem>            
+        </Menu>
+    </Sider>
+    
+    <Layout Class="site-layout" Style="height: 100vh;">
+        <Header Class="site-layout-background" Style="padding: 0;">
+            <GridRow>
+                <GridCol Xs="20" Sm="20" Md="20" Lg="20" Xl="22">
+                    <Menu Mode=MenuMode.Horizontal>
+                        @if (_collapsed)
+                        {
+                            <Icon Type="menu-unfold" Theme="outline" Class="trigger" OnClick="Toggle"/>
+                        }
+                        else
+                        {
+                            <Icon Type="menu-fold" Theme="outline" Class="trigger" OnClick="Toggle"/>
+                        }
+                        <MenuItem Key="mail">
+                            <Icon Component="@CustomIcons.Materail.Container" Theme="outline"></Icon>
+                            Navigation One
+                        </MenuItem>
+                        <MenuItem Key="app" Disabled>
+                            <Icon Component="@CustomIcons.Materail.Warehouse" Theme="outline"></Icon>
+                            Navigation Two
+                        </MenuItem>
+                        <SubMenu TitleTemplate=@_sub1Title>
+                            <MenuItemGroup Title="Item 1">
+                                <MenuItem Key="setting:1">
+                                    <Icon Component="@CustomIcons.Materail.Warehouse" Theme="outline"></Icon>
+                                    Option 1
+                                </MenuItem>
+                                <MenuItem Key="setting:2">Option 2</MenuItem>
+                            </MenuItemGroup>
+                            <MenuDivider/>
+                            <MenuItemGroup Title="Item 2">
+                                <MenuItem Key="setting:3">Option 3</MenuItem>
+                                <SubMenu Title="Option 4">
+                                    <MenuItem Key="setting4:1">Option 1</MenuItem>
+                                    <MenuItem Key="setting4:2">Option 2</MenuItem>
+                                </SubMenu>
+                            </MenuItemGroup>
+                        </SubMenu>
+                        <MenuItem Key="alipay">
+                            <MenuLink Href="https://ant.design" target="_blank" rel="noopener noreferrer">
+                                <Icon Component="@CustomIcons.Materail.Warehouse" Theme="outline"></Icon>
+                                Navigation Four - Link
+                            </MenuLink>
+                        </MenuItem>
+                    </Menu>                    
+                </GridCol>
+                <GridCol Xs="4" Sm="4" Md="4" Lg="4" Xl="2">
+                    <Menu Mode=MenuMode.Horizontal>
+                        <Tooltip Title="User">
+                            <MenuItem Key="account" OnClick="@(() => _isUserOpen = !_isUserOpen)">
+                                <Icon Type="user" Theme="outline"/>
+                            </MenuItem>                            
+                        </Tooltip>
+                        <Tooltip Title="Setting">
+                            <MenuItem Key="setting" OnClick="@(() => _isSettingOpen = !_isSettingOpen)">
+                                <Icon Type="setting" Theme="outline"/>
+                            </MenuItem>
+                        </Tooltip>
+                    </Menu>
+                </GridCol>          
+            </GridRow>
+        </Header>
+        <div style="padding: 10px 10px 0 10px">
+            <Breadcrumb RouteLabel="">
+                <BreadcrumbItem>
+                    Home
+                </BreadcrumbItem>
+                <BreadcrumbItem>
+                    <a>Application List</a>
+                </BreadcrumbItem>
+                <BreadcrumbItem>
+                    @_title
+                </BreadcrumbItem>
+            </Breadcrumb>
+        </div>        
+        <Content Class="site-layout-background"
+                 Style="margin: 24px 16px;padding: 24px;height: 100vh; overflow-y:scroll; overflow-x:scroll;">
+            @ChildContent
+        </Content>
+    </Layout>
+</Layout>
+
+<User @bind-IsOpen="_isUserOpen"/>
+<Setting @bind-IsOpen="_isSettingOpen"/>
+
+<style>
+    .trigger {
+        font-size: 18px;
+        line-height: 64px;
+        padding: 0 24px;
+        cursor: pointer;
+        transition: color 0.3s;
+    }
+
+    .trigger:hover {
+        color: #1890ff;
+    }
+
+    .logo {
+        height: 32px;
+        background: rgba(255, 255, 255, 0.2);
+        margin: 16px;
+    }
+
+    .site-layout .site-layout-background {
+        background: #fff;
+    }
+</style>
+
+@code
+{   
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    
+    private bool _isSettingOpen;
+    private bool _isUserOpen;
+    
+    private string userId;
+    private string notificationMessage;
+        
+    private bool _collapsed;
+    private string _current { get; set; }
+    private string _title { get; set; }
+    private RenderFragment _sub1Title =
+        @<Template>
+            <Icon Type="setting" Theme="outline"></Icon>
+            Navigation Three - Submenu
+        </Template>;
+    
+    private Dictionary<string, string> _menus = new()
+    {
+        { "/", "Customer" },
+        { "/counter", "Counter" },
+        { "/fetchdata", "Fetch Data" },
+        { "/accounts", "Accounts"}
+    };
+
+    #region [init]
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Connection.On<string>("ReceiveNotification", async message =>
+        {
+            await this.NotificationService.Info(new NotificationConfig()
+            {
+                Message = "Information",
+                Description = message
+            });
+            await this.InvokeAsync(StateHasChanged);
+        });
+
+        if (Connection.State == HubConnectionState.Disconnected)
+        {
+            await Connection.StartAsync();
+        }
+
+        Connection.Closed += exception =>
+        {
+            if (exception.xIsNotEmpty())
+            {
+                Logger.LogDebug(exception, "HubConnection Closed : {Error}", exception.Message);    
+            }
+            return Task.CompletedTask;
+        };
+        Connection.Reconnected += s =>
+        {
+            Logger.LogDebug("Reconnected : {S}",s);
+            return Task.CompletedTask;
+        };
+    }
+
+    #endregion
+
+    #region [function]
+
+    void Toggle()
+    {
+        _collapsed = !_collapsed; 
+    }
+
+    void OnCollapse(bool isCollapsed)
+    {
+    #region DEBUG
+
+        Console.WriteLine($"Collapsed: {isCollapsed}");
+
+    #endregion
+    }
+    
+    private void HandleClick(MenuItem e)
+    {
+        _current = e.Key;
+        _title = _menus[e.RouterLink];
+        NavigationManager.NavigateTo(e.RouterLink);
+    }
+
+    #endregion
+}
+

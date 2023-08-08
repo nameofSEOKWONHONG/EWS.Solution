@@ -1,0 +1,92 @@
+﻿@page "/login"
+
+@using System.Text.Json
+@using EWS.BlazorWasm.Base
+@using EWS.Domain.Identity
+@using eXtensionSharp
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.SignalR.Client
+
+@layout MainLayout
+
+@attribute [AllowAnonymous]
+
+@inject IAuthentication Authentication;
+@inject NotificationService NotificationService;
+@inject HubConnection HubConnection;
+@inject NavigationManager NavigationManager
+
+<Space Direction="DirectionVHType.Horizontal" style="width: 100%; justify-content: center;">
+    <Space Direction="DirectionVHType.Vertical" Style="height: 100%; justify-content: center;">
+        <Image Src="./images/logo.png" PreviewVisible="false" Preview="false"></Image>
+    </Space>
+</Space>
+
+<Content>
+    <div style="display: flex; justify-content: center; align-items: center; height: 50vh;">
+        <Form Loading="loading"
+              Model="@_request"
+              OnFinish="OnFinish"
+              OnFinishFailed="OnFinishFailed"
+              LabelColSpan="6"
+              WrapperColSpan="24">
+            <FormItem Label="Tenant" Required="true" LabelAlign="AntLabelAlignType.Right">
+                <Input @bind-Value="@context.TenantId" Placeholder="input tenant id"/>
+            </FormItem>            
+            <FormItem Label="Email" Required="true" LabelAlign="AntLabelAlignType.Right">
+                <Input @bind-Value="@context.Email" Placeholder="input email address"/>
+            </FormItem>
+            <FormItem Label="Password" Required="false" LabelAlign="AntLabelAlignType.Right">
+                <InputPassword @bind-Value="@context.Password" Placeholder="input password"/>
+            </FormItem>
+            <FormItem Class="text-end">
+                <Checkbox @bind-Value="context.RememberMe">Remember me</Checkbox>
+            </FormItem>
+            <FormItem>
+                <div class="text-end">
+                    <Button Type="@ButtonType.Primary" HtmlType="submit">
+                        Submit
+                    </Button>
+                </div>
+            </FormItem>
+        </Form>
+    </div>
+</Content>
+
+@code
+{
+    private bool loading = false;
+    private TokenRequest _request = new TokenRequest();
+    
+    private async Task OnFinish(EditContext editContext)
+    {
+        Toggle(true);
+        await Task.Delay(500);
+        _request.ConnectionId = HubConnection.ConnectionId;
+        
+        var result = await Authentication.Login(_request);
+        Toggle(false);
+        
+        if (result.Succeeded.xIsFalse())
+        {
+            await NotificationService.Error(new NotificationConfig()
+            {
+                Message = "Warning",
+                Description = result.Messages.xFirst()
+            });
+        }
+        else
+        {
+            Console.WriteLine("login");
+            NavigationManager.NavigateTo("/");
+        }
+    }
+
+    private void OnFinishFailed(EditContext editContext)
+    {
+        Console.WriteLine(string.Join(',', editContext.GetValidationMessages()));
+        Console.WriteLine($"Failed:{JsonSerializer.Serialize(_request)}");
+    }
+    
+    void Toggle(bool value) => loading = value;    
+}

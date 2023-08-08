@@ -1,0 +1,62 @@
+﻿@inject NavigationManager NavigationManager
+@inject ILogger<MainLayout> Logger
+
+@inherits LayoutComponentBase
+
+<AuthorizeView>
+    <NotAuthorized>
+        @if (_isDebug)
+        {
+            @Body
+        }
+        else
+        {
+            <MainBody>
+                <CascadingValue Value="this">
+                    @Body
+                </CascadingValue>
+            </MainBody>            
+        }
+    </NotAuthorized>    
+    <Authorized>
+        @if (_isPrint)
+        {
+            <JPrintBody>
+                <CascadingValue Value="this">
+                    @Body
+                </CascadingValue>
+            </JPrintBody>
+        }
+        else
+        {
+            @if (_isDebug)
+            {
+                <JPrintBody>
+                    <CascadingValue Value="this">
+                        @Body
+                    </CascadingValue>
+                </JPrintBody>                
+            }
+            else
+            {
+                <MainBody>
+                    <CascadingValue Value="this">
+                        @Body
+                    </CascadingValue>
+                </MainBody>                
+            }
+        }
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    private bool _isPrint;
+    private bool _isDebug;
+
+    protected override void OnInitialized()
+    {
+        _isPrint = this.NavigationManager.Uri.Contains("isprint=true");
+        _isDebug = this.NavigationManager.Uri.Contains("isdebug=true");
+        Logger.LogInformation("Navigate uri : {URI}", this.NavigationManager.Uri);
+    }
+}
