@@ -13,8 +13,4 @@
       <ProjectReference Include="..\..\3.Domain.Infra\EWS.Domain.Infra\EWS.Domain.Infra.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Mapster" Version="7.3.0" />
-    </ItemGroup>
-
 </Project>

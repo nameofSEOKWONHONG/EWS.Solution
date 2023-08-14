@@ -1,5 +1,5 @@
 ﻿using EWS.Entity.Base;
-using EWS.Entity.Db.Example;
+using EWS.Entity.Example;
 using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Entity.Db;

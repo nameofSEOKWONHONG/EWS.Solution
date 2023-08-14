@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace EWS.Domain.Implement.Example.WeatherForecast;
 
-public class WeatherForecastSingletonService : SingletonServiceImpl<WeatherForecastSingletonService, int, Entity.Db.Example.WeatherForecast>, IWeatherForecastSingletonService
+public class WeatherForecastSingletonService : SingletonServiceImpl<WeatherForecastSingletonService, int, Entity.Example.WeatherForecast>, IWeatherForecastSingletonService
 {
-    private readonly Entity.Db.Example.WeatherForecast _weatherForecast;
+    private readonly Entity.Example.WeatherForecast _weatherForecast;
     public WeatherForecastSingletonService(IHttpContextAccessor accessor) : base(accessor)
     {
         _weatherForecast = new()

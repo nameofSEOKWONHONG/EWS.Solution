@@ -6,7 +6,6 @@ using EWS.Domain.Infra.Abstract;
 using EWS.Domain.Infra.Redis;
 using EWS.Domain.Infra.Service;
 using EWS.Entity.Db;
-using EWS.Entity.Db.Example;
 using EWS.Infrastructure.ServiceRouter.Implement.Routers;
 using EWS.Infrastructure.Session.Abstract;
 using eXtensionSharp;

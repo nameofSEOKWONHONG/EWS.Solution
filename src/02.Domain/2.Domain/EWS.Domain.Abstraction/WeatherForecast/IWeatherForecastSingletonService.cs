@@ -2,7 +2,7 @@
 
 namespace EWS.Domain.Abstraction.WeatherForecast;
 
-public interface IWeatherForecastSingletonService : IServiceImplBase<int, Entity.Db.Example.WeatherForecast>
+public interface IWeatherForecastSingletonService : IServiceImplBase<int, Entity.Example.WeatherForecast>
 {
     
 }

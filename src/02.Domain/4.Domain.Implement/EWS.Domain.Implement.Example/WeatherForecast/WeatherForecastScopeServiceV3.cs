@@ -25,7 +25,7 @@ public class WeatherForecastServiceV3: ScopeServiceImpl<WeatherForecastServiceV3
 
     public override async Task OnExecuteAsync(ISessionContext context)
     {
-        this.Result = await this.DbContext.CreateSelectBuilder<Entity.Db.Example.WeatherForecast>(context)
+        this.Result = await this.DbContext.CreateSelectBuilder<Entity.Example.WeatherForecast>(context)
             .SetQueryable(query =>
             {
                 if (this.Request > 0)

@@ -25,7 +25,7 @@ public class WeatherForecastGetAllService : ScopeServiceImpl<WeatherForecastGetA
 
     public override async Task OnExecuteAsync(ISessionContext context)
     {
-        this.Result = await this.DbContext.CreateSelectBuilder<Entity.Db.Example.WeatherForecast>(context)
+        this.Result = await this.DbContext.CreateSelectBuilder<Entity.Example.WeatherForecast>(context)
             .SetRequest(this.Request)
             .SetQueryable(query => query)
             .ToPaginationAsync<WeatherForecastResult>(res =>

@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace EWS.Domain.Implement.Example.WeatherForecast;
 
-public class WeatherForecastAddService : ScopeServiceImpl<WeatherForecastAddService, Entity.Db.Example.WeatherForecast, IResultBase<int>>, IWeatherForecastAddService
+public class WeatherForecastAddService : ScopeServiceImpl<WeatherForecastAddService, Entity.Example.WeatherForecast, IResultBase<int>>, IWeatherForecastAddService
 {
     public WeatherForecastAddService(IHttpContextAccessor accessor) : base(accessor)
     {
@@ -17,7 +17,7 @@ public class WeatherForecastAddService : ScopeServiceImpl<WeatherForecastAddServ
 
     public override async Task<bool> OnExecutingAsync(ISessionContext context)
     {
-        var validator = new Entity.Db.Example.WeatherForecast.Validator();
+        var validator = new Entity.Example.WeatherForecast.Validator();
         var valid = validator.Validate(this.Request);
         if (valid.IsValid.xIsFalse())
         {
@@ -30,7 +30,7 @@ public class WeatherForecastAddService : ScopeServiceImpl<WeatherForecastAddServ
 
     public override async Task OnExecuteAsync(ISessionContext context)
     {
-        var result = await this.DbContext.CreateUpsertBuilder<Entity.Db.Example.WeatherForecast>(context)
+        var result = await this.DbContext.CreateUpsertBuilder<Entity.Example.WeatherForecast>(context)
             .SetQueryable(query => query.Where(m => m.Id == this.Request.Id))
             .OnAddAsync(() => Task.FromResult(this.Request))
             .ExecuteAsync();

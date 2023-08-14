@@ -21,7 +21,7 @@ public class WeatherForecastGetService : ScopeServiceImpl<WeatherForecastGetServ
 
     public override async Task OnExecuteAsync(ISessionContext context)
     {
-        this.Result = await this.DbContext.CreateSelectBuilder<Entity.Db.Example.WeatherForecast>(context)
+        this.Result = await this.DbContext.CreateSelectBuilder<Entity.Example.WeatherForecast>(context)
             .SetQueryable(q => q.Where(m => m.Id == this.Request))
             .ToFirstAsync<WeatherForecastResult>(res => new WeatherForecastResult()
             {

@@ -22,6 +22,6 @@ public class WeatherForecastBulkInsertService : ScopeServiceImpl<WeatherForecast
     public override async Task OnExecuteAsync(ISessionContext context)
     {
         await this.DbContext.CreateSqlBulkBuilder<WeatherForecastBulkRequest>(context)
-            .BulkInsertAsync<Entity.Db.Example.WeatherForecast>(this.Request.ToArray());
+            .BulkInsertAsync<Entity.Example.WeatherForecast>(this.Request.ToArray());
     }
 }

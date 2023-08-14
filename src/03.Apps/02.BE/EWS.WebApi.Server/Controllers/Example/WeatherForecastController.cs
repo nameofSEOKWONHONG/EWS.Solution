@@ -5,16 +5,13 @@ using EWS.Domain.Base;
 using EWS.Domain.Example;
 using EWS.Domain.Implement.Example.BackgroundJob.Abstract;
 using EWS.Entity.Db;
-using EWS.Entity.Db.Example;
 using EWS.Domain.Infra;
-
+using EWS.Entity.Example;
 using EWS.Infrastructure.Extentions;
 using EWS.Infrastructure.ServiceRouter.Implement.Routers;
 using eXtensionSharp;
 using Hangfire;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OneOf.Types;
 
 namespace EWS.WebApi.Server.Controllers;
 

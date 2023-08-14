@@ -3,7 +3,7 @@ using EWS.Entity.Base;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
-namespace EWS.Entity.Db.Example;
+namespace EWS.Entity.Example;
 
 /// <summary>
 /// 비 제네릭 타입 선언시 예제
