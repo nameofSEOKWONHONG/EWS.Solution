@@ -1,0 +1,21 @@
+@page "/Dount"
+<h3>@_dount</h3>
+
+@code {
+    private string _dount;
+    private Timer _timer;
+    private object? _state;
+    private string[] _chars = new[] { "A", "B", "C", "D" };
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        _timer = new Timer(_ => Draw(), _state, 1000, 1);
+        
+    }
+
+    private void Draw()
+    {
+        _dount = _chars[Random.Shared.Next(0, 3)];
+    }
+}

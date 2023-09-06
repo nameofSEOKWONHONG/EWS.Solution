@@ -34,9 +34,21 @@ public class WeatherForecastController : JControllerBase
     [HttpGet("getall")]
     public async Task<JPaginatedResult<WeatherForecastResult>> GetAll([FromQuery]WeatherForecatGetAllRequest request)
     {
-        var result = await this.CreateServiceRouter<EWSMsDbContext, IWeatherForecastGetAllService, WeatherForecatGetAllRequest,
-            JPaginatedResult<WeatherForecastResult>>(request);
+        using var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor, TransactionScopeOption.Suppress);
+
+        JPaginatedResult<WeatherForecastResult> result = null;
+        sr.Register<IWeatherForecastGetAllService, WeatherForecatGetAllRequest, JPaginatedResult<WeatherForecastResult>>()
+            .AddFilter(() => true)
+            .SetParameter(() => request)
+            .Executed(res =>
+            {
+                result = res;
+            });
+
+        await sr.ExecuteAsync();
+        
         _client.Enqueue<IMyBackgroundJob>(job => job.Run());
+        
         return result;
     }
 
@@ -75,8 +87,8 @@ public class WeatherForecastController : JControllerBase
         return Ok(result);
     }
 
-    // [HttpPost(Name = "GetBatch")]
-    // public async Task<IEnumerable<WeatherForecastResult>> GetBatch(int[] ids)
+    // [HttpPost(Name = "batch")]
+    // public async Task<IEnumerable<WeatherForecastResult>> Batch(int[] ids)
     // {
     //     var result = new List<WeatherForecastResult>();
     //     using (var batch = ServiceBatchRouter.Create<ExampleJDbContext, int>(_accessor, TransactionScopeOption.Suppress, ids))
@@ -94,25 +106,7 @@ public class WeatherForecastController : JControllerBase
     //     return result;
     // }
 
-
-
-    // [HttpGet("GetSingle")]
-    // public async Task<IActionResult> GetSingle([FromQuery]int i)
-    // {
-    //     WeatherForecast result = null;
-    //     using (var sr = ServiceRouter.Create<ExampleJDbContext>(_accessor, TransactionScopeOption.Required))
-    //     {
-    //         sr.Register<IWeatherForecastSingletonService, int, WeatherForecast>()
-    //             .AddFilter(() => i > 0)
-    //             .SetParameter(() => i)
-    //             .Executed((res) => result = res);
-    //         await sr.ExecuteAsync();
-    //     }
-    //
-    //     return Ok(result);
-    // }
-
-    [HttpGet("CallWorker")]
+    [HttpGet("callworker")]
     public async Task<IActionResult> CallWorker(string connectionId)
     {
         var result = new List<WeatherForecastResult>();
