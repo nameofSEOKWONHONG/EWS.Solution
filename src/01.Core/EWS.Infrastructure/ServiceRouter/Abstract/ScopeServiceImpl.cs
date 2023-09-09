@@ -8,7 +8,6 @@ public abstract class ScopeServiceImpl<TSelf, TRequest, TResult> : ServiceImplBa
 {
     public TRequest Request { get; set; }
     public TResult Result { get; set; }
-    public DbContext DbContext { get; set; }
 
     protected ScopeServiceImpl(IHttpContextAccessor accessor) : base(accessor)
     {

@@ -6,6 +6,7 @@ using EWS.Infrastructure.ServiceRouter.Abstract;
 using EWS.Infrastructure.Session.Abstract;
 using Mapster;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Resource;
 
@@ -15,14 +16,14 @@ public class GetAllResourceService : ScopeServiceImpl<GetAllResourceService, Get
     {
     }
 
-    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(ISessionContext context)
+    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
-        this.Result = await this.DbContext.CreateSelectBuilder<Entity.Resource>(context)
+        this.Result = await dbContext.CreateSelectBuilder<Entity.Resource>(context)
             .SetRequest(this.Request)
             .SetQueryable(query => query)
             .ToPaginationAsync<ResourceResult>(res => res.Adapt<List<ResourceResult>>());

@@ -8,6 +8,7 @@ using EWS.Infrastructure.ServiceRouter.Implement.Routers;
 using EWS.Infrastructure.Session.Abstract;
 using eXtensionSharp;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -22,12 +23,12 @@ public class GenerateJwtTokenService: ScopeServiceImpl<GenerateJwtTokenService, 
         _configuration = accessor.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
     }
 
-    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(ISessionContext context)
+    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
         SigningCredentials signingCredentials = null;
         IEnumerable<Claim> claims = null;

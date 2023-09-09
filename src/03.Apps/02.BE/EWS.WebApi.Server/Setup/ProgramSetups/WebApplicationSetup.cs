@@ -35,6 +35,11 @@ public static class WebApplicationSetup
         return app;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="app"></param>
+    /// <returns></returns>
     public static WebApplication vUseBlazorHost(this WebApplication app)
     {
         app.UseStaticFiles();

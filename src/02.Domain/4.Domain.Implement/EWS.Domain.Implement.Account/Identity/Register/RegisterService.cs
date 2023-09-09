@@ -25,14 +25,14 @@ public class RegisterService : ScopeServiceImpl<RegisterService, RegisterRequest
         _passwordHasher = this.Accessor.HttpContext.RequestServices.GetRequiredService<IPasswordHasher<User>>();
     }
 
-    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(ISessionContext context)
+    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
-        var userSet = this.DbContext.Set<User>();
+        var userSet = dbContext.Set<User>();
         var userWithSameUserName = await userSet.FirstOrDefaultAsync(m => m.TenantId == context.TenantId && m.UserName == this.Request.UserName);
         if (userWithSameUserName.xIsNotEmpty())
         {
@@ -77,20 +77,20 @@ public class RegisterService : ScopeServiceImpl<RegisterService, RegisterRequest
         user.PasswordHash = hashedPassword;
         user.SecurityStamp = $"{user.Id}{user.FirstName}{user.LastName}{user.Email}{context.CurrentTimeAccessor.Now}".xGetHashCode();
         await userSet.AddAsync(user);
-        await this.DbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync();
 
-        var roleDb = this.DbContext.Set<Role>(); 
+        var roleDb = dbContext.Set<Role>(); 
         var basicRole = await roleDb.FirstAsync(m => m.TenantId == context.TenantId &&
                                                        m.Name == RoleConstants.BasicRole);
 
-        var userRoleSet = this.DbContext.Set<UserRole>();
+        var userRoleSet = dbContext.Set<UserRole>();
         await userRoleSet.AddAsync(new UserRole()
         {
             TenantId = context.TenantId,
             UserId = user.Id,
             RoleId = basicRole.Id
         });
-        await this.DbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync();
 
         if (this.Request.AutoConfirmEmail.xIsFalse())
         {

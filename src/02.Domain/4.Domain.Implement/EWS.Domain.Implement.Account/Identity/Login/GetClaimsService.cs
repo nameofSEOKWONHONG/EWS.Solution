@@ -20,18 +20,18 @@ public class GetClaimsService : ScopeServiceImpl<GetClaimsService, User, IEnumer
     {
     }
 
-    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(ISessionContext context)
+    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
-        var tenantDb = this.DbContext.Set<Tenant>();
-        var userDb = this.DbContext.Set<User>();
-        var userRoleDb = this.DbContext.Set<UserRole>();
-        var roleDb = this.DbContext.Set<Role>();
-        var roleClaimDb = this.DbContext.Set<RoleClaim>();
+        var tenantDb = dbContext.Set<Tenant>();
+        var userDb = dbContext.Set<User>();
+        var userRoleDb = dbContext.Set<UserRole>();
+        var roleDb = dbContext.Set<Role>();
+        var roleClaimDb = dbContext.Set<RoleClaim>();
         
         var userClaims = new List<Claim>();
         var tenant = await tenantDb.FirstOrDefaultAsync(m => m.Id == this.Request.TenantId);

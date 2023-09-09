@@ -8,6 +8,7 @@ using EWS.Application.Const;
 using EWS.Application.Language;
 using EWS.Application.Service.Abstract;
 using EWS.Domain;
+using EWS.Domain.Abstraction.Common;
 using EWS.Domain.Base;
 using EWS.Domain.Infra.Localizer;
 using EWS.Domain.Infra.Redis;
@@ -87,6 +88,11 @@ public static class ServiceCollectionSetup
         services.AddHangfireServer();
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="services"></param>
+    /// <returns></returns>
     public static IServiceCollection vAddSessionContext(this IServiceCollection services)
     {
         services.AddScoped<ICurrentUserAccessor, CurrentUserAccessor>();
@@ -97,6 +103,11 @@ public static class ServiceCollectionSetup
         return services;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="services"></param>
+    /// <returns></returns>
     public static IServiceCollection vAddLocalizer(this IServiceCollection services)
     {
         #region [localizer]
@@ -108,6 +119,12 @@ public static class ServiceCollectionSetup
         return services;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="configuration"></param>
+    /// <returns></returns>
     public static IServiceCollection vAddIdentity(this IServiceCollection services, IConfiguration configuration)
     {
         #region [token and identity]
@@ -231,6 +248,11 @@ public static class ServiceCollectionSetup
 
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="services"></param>
+    /// <returns></returns>
     public static IServiceCollection vAddSwagger(this IServiceCollection services)
     {
         #region [swagger]
@@ -269,6 +291,11 @@ public static class ServiceCollectionSetup
         return services;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="services"></param>
+    /// <returns></returns>
     public static IServiceCollection vAddCompression(this IServiceCollection services)
     {
         #region [util]
@@ -287,12 +314,11 @@ public static class ServiceCollectionSetup
 
         return services;
     }
-    
+
     /// <summary>
     /// 
     /// </summary>
     /// <param name="services"></param>
-    /// <param name="configuration"></param>
     /// <returns></returns>
     public static IServiceCollection vAddScrutor(this IServiceCollection services)
     {

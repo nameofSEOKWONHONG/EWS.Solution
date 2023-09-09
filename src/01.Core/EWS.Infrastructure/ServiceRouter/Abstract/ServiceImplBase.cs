@@ -1,5 +1,6 @@
 ﻿using EWS.Infrastructure.Session.Abstract;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Infrastructure.ServiceRouter.Abstract;
 
@@ -18,9 +19,9 @@ public abstract class ServiceImplBase : IServiceImplBase
         Accessor = accessor;
     }
     
-    public abstract Task<bool> OnExecutingAsync(ISessionContext context);
+    public abstract Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context);
 
-    public abstract Task OnExecuteAsync(ISessionContext context);
+    public abstract Task OnExecuteAsync(DbContext dbContext, ISessionContext context);
 }
 
 public abstract class ServiceImplBase<TSelf> : ServiceImplBase

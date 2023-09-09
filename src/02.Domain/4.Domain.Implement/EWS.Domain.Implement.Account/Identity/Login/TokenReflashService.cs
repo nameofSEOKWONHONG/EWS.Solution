@@ -23,14 +23,14 @@ public class TokenReflashService : ScopeServiceImpl<TokenReflashService, Refresh
     {
     }
 
-    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(ISessionContext context)
+    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
-        var users = this.DbContext.Set<User>();
+        var users = dbContext.Set<User>();
         if (this.Request.xIsEmpty())
         {
             this.Result = await JResult<TokenResponse>.FailAsync("Invalid Client Token.");
@@ -98,7 +98,7 @@ public class TokenReflashService : ScopeServiceImpl<TokenReflashService, Refresh
                 .Executed(async () =>
                 {
                     users.Update(user);
-                    await this.DbContext.SaveChangesAsync();
+                    await dbContext.SaveChangesAsync();
                     
                     var response = new TokenResponse { Token = token, RefreshToken = user.RefreshToken, RefreshTokenExpiryTime = user.RefreshTokenExpiryTime };
                     this.Result = await JResult<TokenResponse>.SuccessAsync(response);                    

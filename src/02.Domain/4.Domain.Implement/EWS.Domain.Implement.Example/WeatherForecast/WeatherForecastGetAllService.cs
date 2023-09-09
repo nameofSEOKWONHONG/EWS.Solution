@@ -10,6 +10,7 @@ using EWS.Infrastructure.ServiceRouter.Implement.Routers;
 using EWS.Infrastructure.Session.Abstract;
 using eXtensionSharp;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Example.WeatherForecast;
 
@@ -20,15 +21,15 @@ public class WeatherForecastGetAllService : ScopeServiceImpl<WeatherForecastGetA
         
     }
 
-    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
         
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(ISessionContext context)
+    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
-        this.Result = await this.DbContext.CreateSelectBuilder<Entity.Example.WeatherForecast>(context)
+        this.Result = await dbContext.CreateSelectBuilder<Entity.Example.WeatherForecast>(context)
             .SetRequest(this.Request)
             .SetQueryable(query => query)
             .ToPaginationAsync<WeatherForecastResult>(res =>

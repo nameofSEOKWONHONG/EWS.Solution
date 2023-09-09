@@ -135,7 +135,7 @@ private ColLayoutParam _labelCol = new ColLayoutParam
 
     #region [function]
 
-    private async Task OnFinish(EditContext editContext)
+    protected override async Task OnFinish(EditContext editContext)
     {
         var vaild = editContext.Validate();
         if(vaild.xIsFalse()) return;
@@ -148,7 +148,7 @@ private ColLayoutParam _labelCol = new ColLayoutParam
         await this.ShowMessageAsync("저장 되었습니다.");
     }
 
-    private void OnFinishFailed(EditContext editContext)
+    protected override void OnFinishFailed(EditContext editContext)
     {
         Console.WriteLine($"Failed:{_model.xToJson()}"); 
     }    

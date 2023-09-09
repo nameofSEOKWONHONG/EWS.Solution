@@ -17,22 +17,22 @@ public class ActiveResourceService: ScopeServiceImpl<GetResourceService, Entity.
     {
     }
 
-    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(ISessionContext context)
+    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
-        var result =  await this.DbContext.CreateActiveBuilder<Entity.Resource>(context)
+        var result =  await dbContext.CreateActiveBuilder<Entity.Resource>(context)
             .OnDelete(async exist =>
             {
-                var db = this.DbContext.Set<SubResource>();
+                var db = dbContext.Set<SubResource>();
                 var items = await db.Where(m => m.TenantId == context.TenantId &&
                                   m.Resource.TenantId == context.TenantId &&
                                   m.Resource.Code == exist.Code).ToListAsync();
                 db.RemoveRange(items);
-                await this.DbContext.SaveChangesAsync();
+                await dbContext.SaveChangesAsync();
             })
             .ExecuteAsync();
         

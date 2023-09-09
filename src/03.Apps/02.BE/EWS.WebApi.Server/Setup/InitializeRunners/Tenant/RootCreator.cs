@@ -9,11 +9,19 @@ using Microsoft.AspNetCore.Identity;
 
 namespace EWS.WebApi.Server.ApplicationInitializer.Tenant;
 
+/// <summary>
+/// 
+/// </summary>
 public class RootCreator
 {
     private readonly EWSMsDbContext _dbContext;
     private readonly IPasswordHasher<User> _passwordHasher;
     
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="dbContext"></param>
+    /// <param name="passwordHasher"></param>
     public RootCreator(EWSMsDbContext dbContext,
         IPasswordHasher<User> passwordHasher)
     {
@@ -21,6 +29,10 @@ public class RootCreator
         _passwordHasher = passwordHasher;
     }
     
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="args"></param>
     public void Execute(string[] args)
     {
         var tenant = TenantParser.Create().Parse(args);

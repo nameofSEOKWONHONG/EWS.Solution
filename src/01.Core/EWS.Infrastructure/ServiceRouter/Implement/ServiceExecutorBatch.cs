@@ -52,13 +52,13 @@ public sealed class ServiceExecutorBatch<TDbContext, TService, TRequest, TResult
         }
 
         var service = _accessor.HttpContext.RequestServices.GetRequiredService<TService>();
-        service.DbContext = _accessor.HttpContext.RequestServices.GetRequiredService<TDbContext>();
+        var db = _accessor.HttpContext.RequestServices.GetRequiredService<TDbContext>();
         var session = _accessor.HttpContext.RequestServices.GetRequiredService<ISessionContext>();
         service.Request = _setParameter.Invoke(request);
-        var executing = await service.OnExecutingAsync(session);
+        var executing = await service.OnExecutingAsync(db, session);
         if (executing.xIsFalse()) return;
-        await service.OnExecuteAsync(session);
+        await service.OnExecuteAsync(db, session);
         _executed.Invoke(service.Result);
-        service.DbContext.ChangeTracker.Clear();
+        db.ChangeTracker.Clear();
     }
 }

@@ -1,15 +1,11 @@
-﻿using eXtensionSharp;
+﻿using EWS.Domain.Abstraction.Common;
+using eXtensionSharp;
 using MailKit.Net.Smtp;
 using MimeKit;
 using MimeKit.Text;
 using static Microsoft.Win32.Registry;
 
 namespace EWS.Domain.Infra.Service;
-
-public interface IHostNotificationService
-{
-    Task NotificationAsync();
-}
 
 public class HostNotificationService : IHostNotificationService
 {

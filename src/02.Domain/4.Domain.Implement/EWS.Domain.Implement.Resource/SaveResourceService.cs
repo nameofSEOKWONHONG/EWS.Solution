@@ -5,6 +5,7 @@ using EWS.Domain.Infra.QueryBuilder.CodeEntityBase;
 using EWS.Infrastructure.ServiceRouter.Abstract;
 using EWS.Infrastructure.Session.Abstract;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Resource;
 
@@ -14,14 +15,14 @@ public class SaveResourceService: ScopeServiceImpl<GetResourceService, Entity.Re
     {
     }
 
-    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(ISessionContext context)
+    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
-        var result = await this.DbContext.CreateUpsertBuilder<Entity.Resource>(context)
+        var result = await dbContext.CreateUpsertBuilder<Entity.Resource>(context)
             .OnAdd(() => this.Request)
             .OnUpdate(exist =>
             {

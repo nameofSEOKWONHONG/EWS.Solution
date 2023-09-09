@@ -22,14 +22,14 @@ public class ResetPasswordService : ScopeServiceImpl<ResetPasswordService, Reset
         _passwordHasher = this.Accessor.HttpContext.RequestServices.GetRequiredService<IPasswordHasher<User>>();
     }
 
-    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(ISessionContext context)
+    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
-        var userSet = this.DbContext.Set<User>();
+        var userSet = dbContext.Set<User>();
         var user = await userSet.FirstOrDefaultAsync(m => m.TenantId == context.TenantId && 
                                                            m.Email == this.Request.Email);
         if (user.xIsEmpty())
@@ -47,7 +47,7 @@ public class ResetPasswordService : ScopeServiceImpl<ResetPasswordService, Reset
                 var hashPassword = _passwordHasher.HashPassword(user, this.Request.ConfirmPassword);
                 user.PasswordHash = hashPassword;
                 userSet.Update(user);
-                await this.DbContext.SaveChangesAsync();
+                await dbContext.SaveChangesAsync();
                 
                 this.Result = await JResult.SuccessAsync("Password Reset Successful!");
                 return;

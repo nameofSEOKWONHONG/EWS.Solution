@@ -19,14 +19,14 @@ public class GetAllUsersService : ScopeServiceImpl<GetAllUsersService, GetAllUse
     {
     }
 
-    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(ISessionContext context)
+    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
-        var userSet = this.DbContext.Set<User>();
+        var userSet = dbContext.Set<User>();
         var query = userSet.Where(m => m.TenantId == context.TenantId &&
                             m.UserName.Contains(this.Request.UserName) &&
                             m.Email.Contains(this.Request.Email));

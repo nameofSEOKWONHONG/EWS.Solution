@@ -2,12 +2,20 @@
 
 namespace EWS.WebApi.Server.ApplicationInitializer.Tenant;
 
+/// <summary>
+/// 
+/// </summary>
 public class TenantParser
 {
     private TenantParser()
     {
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
     public TenantCreatorModel Parse(string[] args)
     {
         if (args.Length < 9) args = new[] { "", "", "", "", "", "", "", "", "", "" };
@@ -24,6 +32,10 @@ public class TenantParser
         };
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public static TenantParser Create()
     {
         return new TenantParser();
@@ -75,8 +87,20 @@ public class TenantCreatorModel
     /// </summary>
     public bool IsActive { get; set; }
     
+    /// <summary>
+    /// 
+    /// </summary>
     public string CreateBy { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
     public DateTime CreateOn { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
     public string LastModifiedBy { get; set; }
+    /// <summary>
+    /// 
+    /// </summary>
     public DateTime LastModifiedOn { get; set; }
 }

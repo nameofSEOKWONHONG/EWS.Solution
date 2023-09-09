@@ -7,6 +7,7 @@ using EWS.Infrastructure.ServiceRouter.Abstract;
 using EWS.Infrastructure.Session.Abstract;
 using eXtensionSharp;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -19,12 +20,12 @@ public class GetPrincipalFromExpiredTokenService : ScopeServiceImpl<GetPrincipal
     {
     }
 
-    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
         return Task.FromResult(true);
     }
 
-    public override Task OnExecuteAsync(ISessionContext context)
+    public override Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
         var tokenValidationParameters = new TokenValidationParameters
         {

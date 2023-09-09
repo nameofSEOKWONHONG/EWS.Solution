@@ -11,7 +11,7 @@ public sealed class SessionServiceExecutor<TDbContext, TService, TRequest, TResu
 {
     private readonly TDbContext _dbContext;
     private readonly ISessionContext _currentSessionContext;
-    private readonly TService _service;
+    private TService _service;
     private readonly List<Func<bool>> _filters = new();
     private Func<TRequest> _setParameter;
     private Action<TResult> _executed;
@@ -54,11 +54,11 @@ public sealed class SessionServiceExecutor<TDbContext, TService, TRequest, TResu
 
         var parameter = _setParameter.Invoke();
         var db = _dbContext;
-        _service.DbContext = db;
         _service.Request = parameter;
-        var executing = await _service.OnExecutingAsync(_currentSessionContext);
+        var executing = await _service.OnExecutingAsync(db, _currentSessionContext);
         if (executing.xIsFalse()) return;
-        await _service.OnExecuteAsync(_currentSessionContext);
+        await _service.OnExecuteAsync(db, _currentSessionContext);
         _executed.Invoke(_service.Result);
+        db.ChangeTracker.Clear();
     }
 }

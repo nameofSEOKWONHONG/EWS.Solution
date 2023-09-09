@@ -5,6 +5,7 @@ using EWS.Domain.Infra.Sql;
 using EWS.Infrastructure.ServiceRouter.Abstract;
 using EWS.Infrastructure.Session.Abstract;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Example.WeatherForecast;
 
@@ -14,14 +15,14 @@ public class WeatherForecastBulkInsertService : ScopeServiceImpl<WeatherForecast
     {
     }
 
-    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(ISessionContext context)
+    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
-        await this.DbContext.CreateSqlBulkBuilder<WeatherForecastBulkRequest>(context)
+        await dbContext.CreateSqlBulkBuilder<WeatherForecastBulkRequest>()
             .BulkInsertAsync<Entity.Example.WeatherForecast>(this.Request.ToArray());
     }
 }

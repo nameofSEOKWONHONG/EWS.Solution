@@ -24,6 +24,11 @@ public class UserController : JSessionControllerBase
     {
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpGet("getall")]
     public async Task<IActionResult> GetAll([FromQuery]GetAllUsersRequest request)
     {

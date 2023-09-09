@@ -7,8 +7,8 @@ public class FileService : IFileService
         
     }
 
-    public async Task ExecuteAsync()
+    public Task ExecuteAsync()
     {
-        
+        return Task.CompletedTask;
     }
 }

@@ -9,18 +9,25 @@ using EWS.Infrastructure.ObjectPool;
 
 namespace EWS.Domain.Infra.Sql;
 
+public static class SqlBulkBuilderExtensions
+{
+    public static SqlBulkBuilder<T> CreateSqlBulkBuilder<T>(this DbContext db)
+        where T : JBulkBase
+    {
+        return new SqlBulkBuilder<T>(db);
+    }
+}
+
 public class SqlBulkBuilder<T>
     where T : JBulkBase
 {
     private readonly DbContext _dbContext;
-    private readonly ISessionContext _ctx;
     private const int BATCH_SIZE = 500;
     private const int BATCH_LIMIT = 2000;
 
-    internal SqlBulkBuilder(DbContext db, ISessionContext ctx)
+    internal SqlBulkBuilder(DbContext db)
     {
         _dbContext = db;
-        _ctx = ctx;
     }
 
     public async Task BulkInsertAsync(string schema, string tableName, T[] items)
@@ -44,28 +51,32 @@ public class SqlBulkBuilder<T>
 
     public Task BulkInsertAsync<TEntity>(T[] items)
     {
-        var tableinfo = AssignSchemaAndTable<TEntity>();
-        return this.BulkInsertAsync(tableinfo.schemaName, tableinfo.tableName, items);
+        var assignSchemaAndTable = AssignSchemaAndTable();
+        return this.BulkInsertAsync(assignSchemaAndTable.schemaName, assignSchemaAndTable.tableName, items);
     }
     
     private string CreateSql(string schema, string tableName, T[] items)
     {
         var columns = AssignColumn(items.First());
-        var datum = AssignDatum<T>(columns, items);
+        var datum = AssignDatum(columns, items);
 
-        var sql = " SET NOCOUNT ON; " + Environment.NewLine +
-                  $" INSERT INTO [{schema}].[{tableName}] ({columns.xJoin()}) " + Environment.NewLine +
-                  $" VALUES {datum.xJoin(Environment.NewLine)} " + Environment.NewLine +
-                  " SET NOCOUNT OFF; ";
+        var sql = $$"""
+                  SET NOCOUNT ON;
+                  
+                  INSERT INTO {{schema}}.{{tableName}} ({{columns.xJoin()}})
+                  VALUES {{datum.xJoin()}}
+                  
+                  SET NOCOUNT OFF;  
+                  """;
 
         return sql;
     }
 
     #region [function]
 
-    private static ConcurrentDictionary<Type, string[]> _assignColumnStates = new();
+    private static readonly ConcurrentDictionary<Type, string[]> _assignColumnStates = new();
 
-    private string[] AssignColumn<T>(T item)
+    private string[] AssignColumn(T item)
     {
         Type itemType = typeof(T);
         if (_assignColumnStates.TryGetValue(itemType, out string[] cachedColumns))
@@ -83,21 +94,21 @@ public class SqlBulkBuilder<T>
         return columns.ToArray();
     }
     
-    private static readonly ConcurrentDictionary<Type, (string schemaName, string tableName)> _assignTableStates = new();
+    private static readonly ConcurrentDictionary<Type, (string schemaName, string tableName)> AssignTableStates = new();
 
-    private (string schemaName, string tableName) AssignSchemaAndTable<T>()
+    private (string schemaName, string tableName) AssignSchemaAndTable()
     {
         Type itemType = typeof(T);
-        if (_assignTableStates.TryGetValue(itemType, out (string schemaName, string tableName) cachedResult))
+        if (AssignTableStates.TryGetValue(itemType, out (string schemaName, string tableName) cachedResult))
         {
             return cachedResult;
         }
         var result = XAttributeExtensions.xGetSchemaAndTableName<T>();
-        _assignTableStates.TryAdd(itemType, result);
+        AssignTableStates.TryAdd(itemType, result);
         return result;
     }    
     
-    private static readonly Dictionary<string, Func<PropertyInfo, object, string>> _datumStates = new()
+    private static readonly Dictionary<string, Func<PropertyInfo, object, string>> DatumStates = new()
     {
         {
             //s += $"DECLARE @{i}{j} NVARCHAR(MAX) = '{item2.GetValue(item)}'" + Environment.NewLine;    
@@ -127,7 +138,7 @@ public class SqlBulkBuilder<T>
         }
     };    
     
-    private IEnumerable<string> AssignDatum<T>(string[] columns, T[] items)
+    private IEnumerable<string> AssignDatum(string[] columns, T[] items)
     {
         var sbPool = StringBuilderPool.Create(items.Length);
         
@@ -142,15 +153,11 @@ public class SqlBulkBuilder<T>
                 var exist = columns.xFirst(m => m == prop.Name);
                 if (exist.xIsEmpty()) return true;
 
-                if(_datumStates.TryGetValue(prop.PropertyType.ToString(), out Func<PropertyInfo, object, string> x))
-                {
-                    // ReSharper disable once AccessToModifiedClosure
-                    statement.Append(x(prop, item));
-                }
-                else
-                {
-                    statement.Append(_datumStates["Default"](prop, item));
-                }
+                // ReSharper disable once AccessToModifiedClosure
+                statement.Append(
+                    DatumStates.TryGetValue(prop.PropertyType.ToString(), out Func<PropertyInfo, object, string> x)
+                        ? x(prop, item)
+                        : DatumStates["Default"](prop, item));
                 return true;
             });
             var valueSql = statement.ToString();
@@ -172,11 +179,3 @@ public class SqlBulkBuilder<T>
 
 }
 
-public static class SqlBulkBuilderExtensions
-{
-    public static SqlBulkBuilder<T> CreateSqlBulkBuilder<T>(this DbContext db, ISessionContext ctx)
-        where T : JBulkBase
-    {
-        return new SqlBulkBuilder<T>(db, ctx);
-    }
-}

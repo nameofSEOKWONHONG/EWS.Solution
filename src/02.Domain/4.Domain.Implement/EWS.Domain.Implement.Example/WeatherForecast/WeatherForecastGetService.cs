@@ -5,6 +5,7 @@ using EWS.Domain.Infra.QueryBuilder.NumberEntityBase;
 using EWS.Infrastructure.ServiceRouter.Abstract;
 using EWS.Infrastructure.Session.Abstract;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Example.WeatherForecast;
 
@@ -14,14 +15,14 @@ public class WeatherForecastGetService : ScopeServiceImpl<WeatherForecastGetServ
     {
     }
 
-    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
         return Task.FromResult(this.Request > 0);
     }
 
-    public override async Task OnExecuteAsync(ISessionContext context)
+    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
-        this.Result = await this.DbContext.CreateSelectBuilder<Entity.Example.WeatherForecast>(context)
+        this.Result = await dbContext.CreateSelectBuilder<Entity.Example.WeatherForecast>(context)
             .SetQueryable(q => q.Where(m => m.Id == this.Request))
             .ToFirstAsync<WeatherForecastResult>(res => new WeatherForecastResult()
             {

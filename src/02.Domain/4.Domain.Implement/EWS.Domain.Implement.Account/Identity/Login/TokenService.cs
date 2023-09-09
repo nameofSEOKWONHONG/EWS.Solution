@@ -26,9 +26,9 @@ public class TokenService : ScopeServiceImpl<TokenService, TokenRequest, IResult
         _passwordHasher = this.Accessor.HttpContext!.RequestServices.GetRequiredService<IPasswordHasher<User>>();
     }
 
-    public override async Task<bool> OnExecutingAsync(ISessionContext context)
+    public override async Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
-        var users = this.DbContext.Set<User>();
+        var users = dbContext.Set<User>();
         var user = await users.FirstOrDefaultAsync(m => m.TenantId == context.TenantId && m.Email == this.Request.Email);
         if (user.xIsEmpty())
         {
@@ -47,7 +47,7 @@ public class TokenService : ScopeServiceImpl<TokenService, TokenRequest, IResult
         {
             user.AccessFailedCount += 1;
             users.Update(user);
-            await this.DbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
             this.Result = await JResult<TokenResponse>.FailAsync( "Access failed.");
             return false;
         }
@@ -55,9 +55,9 @@ public class TokenService : ScopeServiceImpl<TokenService, TokenRequest, IResult
         return true;
     }
 
-    public override async Task OnExecuteAsync(ISessionContext context)
+    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
-        var users = this.DbContext.Set<User>();
+        var users = dbContext.Set<User>();
         var user = await users.FirstOrDefaultAsync(m => m.TenantId == context.TenantId && m.Email == this.Request.Email);
 
         if (user.xIsEmpty())
@@ -130,6 +130,6 @@ public class TokenService : ScopeServiceImpl<TokenService, TokenRequest, IResult
 
         user.AccessFailedCount = 0;
         users.Update(user);
-        await this.DbContext.SaveChangesAsync();
+        await dbContext.SaveChangesAsync();
     }
 }

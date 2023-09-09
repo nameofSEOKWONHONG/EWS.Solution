@@ -7,6 +7,7 @@ using EWS.Infrastructure.ServiceRouter.Abstract;
 using EWS.Infrastructure.Session.Abstract;
 using eXtensionSharp;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,14 +22,14 @@ public class WeatherForecastServiceV2: ScopeServiceImpl<WeatherForecastServiceV2
         this._redisHandler = redisHandler;
     }
 
-    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(ISessionContext context)
+    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
-        this.Result = await this.DbContext.CreateSelectBuilder<Entity.Example.WeatherForecast>(context)
+        this.Result = await dbContext.CreateSelectBuilder<Entity.Example.WeatherForecast>(context)
             .SetQueryable(query =>
             {
                 if (this.Request.xIsNotEmpty())

@@ -2,6 +2,7 @@
 using EWS.Infrastructure.ServiceRouter.Abstract;
 using EWS.Infrastructure.Session.Abstract;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Example.WeatherForecast;
 
@@ -20,12 +21,12 @@ public class WeatherForecastSingletonService : SingletonServiceImpl<WeatherForec
         };
     }
 
-    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
         return Task.FromResult(true);
     }
 
-    public override Task OnExecuteAsync(ISessionContext context)
+    public override Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
         this.Result = _weatherForecast;
         return Task.CompletedTask;

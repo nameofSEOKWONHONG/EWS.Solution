@@ -1,4 +1,5 @@
 ﻿using System.Transactions;
+using EWS.Domain.Abstraction.Common;
 using EWS.Domain.Abstraction.WeatherForecast;
 using EWS.Domain.Common.Enums;
 using EWS.Domain.Example;

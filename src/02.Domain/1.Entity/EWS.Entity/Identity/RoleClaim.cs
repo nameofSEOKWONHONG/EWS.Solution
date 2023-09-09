@@ -14,7 +14,6 @@ public class RoleClaim : IdentityRoleClaim<string>, IEntityBase
     public string TenantId { get; set; }
     public Tenant Tenant { get; set; }
     
-    public string RoleId { get; set; }
     public Role Role { get; set; }
     
     [MaxLength(256), Column(Order = 2)]

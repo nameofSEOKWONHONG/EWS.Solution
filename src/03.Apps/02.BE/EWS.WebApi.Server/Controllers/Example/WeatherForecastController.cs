@@ -32,6 +32,11 @@ public class WeatherForecastController : JControllerBase
         _client = client;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpGet("getall")]
     public async Task<JPaginatedResult<WeatherForecastResult>> GetAll([FromQuery]WeatherForecatGetAllRequest request)
     {
@@ -53,6 +58,11 @@ public class WeatherForecastController : JControllerBase
         return result;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [HttpGet(Name = "get")]
     public async Task<WeatherForecastResult> Get(int id)
     {   
@@ -72,6 +82,11 @@ public class WeatherForecastController : JControllerBase
         return result;
     }
     
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpPost(Name = "add")]
     public async Task<IActionResult> Add(WeatherForecast request)
     {
@@ -107,6 +122,11 @@ public class WeatherForecastController : JControllerBase
     //     return result;
     // }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="connectionId"></param>
+    /// <returns></returns>
     [HttpGet("callworker")]
     public async Task<IActionResult> CallWorker(string connectionId)
     {
@@ -126,6 +146,10 @@ public class WeatherForecastController : JControllerBase
         return Ok(await JResult<List<WeatherForecastResult>>.SuccessAsync(result));
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     [HttpPost("bulk")]
     public async Task<IActionResult> Bulk()
     {

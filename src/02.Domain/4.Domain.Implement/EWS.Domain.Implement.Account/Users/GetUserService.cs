@@ -17,7 +17,7 @@ public class GetUserService : ScopeServiceImpl<GetUserService, string, IResultBa
     {
     }
 
-    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
         if (this.Request.xIsEmpty())
         {
@@ -28,9 +28,9 @@ public class GetUserService : ScopeServiceImpl<GetUserService, string, IResultBa
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(ISessionContext context)
+    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
-        var userSet = this.DbContext.Set<User>();
+        var userSet = dbContext.Set<User>();
         var user = await userSet.FirstOrDefaultAsync(m => m.TenantId == context.TenantId && m.Id == this.Request);
         this.Result = await JResult<User>.SuccessAsync(user);
     }

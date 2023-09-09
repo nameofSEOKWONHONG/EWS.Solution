@@ -17,25 +17,25 @@ public class RemoveUserService : ScopeServiceImpl<RemoveUserService, string, IRe
     {
     }
 
-    public override Task<bool> OnExecutingAsync(ISessionContext context)
+    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(ISessionContext context)
+    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
     {
-        var userSet = this.DbContext.Set<User>();
+        var userSet = dbContext.Set<User>();
         var user = await userSet.FirstOrDefaultAsync(m => m.TenantId == context.TenantId && m.Id == this.Request);
         if (user.IsActive.xIsTrue())
         {
             user.IsActive = !user.IsActive;
             userSet.Update(user);
-            await this.DbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
         }
         else
         {
             userSet.Remove(user);
-            await this.DbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
         }
         
         this.Result = await JResult.SuccessAsync();

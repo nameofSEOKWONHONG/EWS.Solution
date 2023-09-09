@@ -107,12 +107,11 @@ public sealed class ServiceExecutor<TDbContext, TService, TRequest, TResult>
         var db = _accessor.HttpContext!.RequestServices.GetRequiredService<TDbContext>();
         var service = _accessor.HttpContext!.RequestServices.GetRequiredService<TService>();
         var session = _accessor.HttpContext!.RequestServices.GetRequiredService<ISessionContext>();
-        service.DbContext = db;
         service.Request = parameter;
-        var executing = await service.OnExecutingAsync(session);
+        var executing = await service.OnExecutingAsync(db, session);
         if (executing.xIsTrue())
         {
-            await service.OnExecuteAsync(session);    
+            await service.OnExecuteAsync(db, session);    
         }
         _executed.Invoke(service.Result);
         db.ChangeTracker.Clear();
