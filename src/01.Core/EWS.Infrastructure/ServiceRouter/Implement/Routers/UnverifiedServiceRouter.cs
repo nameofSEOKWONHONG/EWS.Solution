@@ -14,26 +14,26 @@ public sealed class UnverifiedServiceRouter
     /// <param name="dbContext"></param>
     /// <param name="ctx"></param>
     /// <param name="transactionScopeOption"></param>
-    /// <typeparam name="TEContext"></typeparam>
+    /// <typeparam name="TDbContext"></typeparam>
     /// <returns></returns>
-    public static UnverifiedServiceRouter<TEContext> Create<TEContext>(TEContext dbContext, ISessionContext ctx,
+    public static UnverifiedServiceRouter<TDbContext> Create<TDbContext>(TDbContext dbContext, ISessionContext ctx,
         TransactionScopeOption transactionScopeOption)
-        where TEContext : DbContext
+        where TDbContext : DbContext
     {
-        return new UnverifiedServiceRouter<TEContext>(dbContext, ctx, TransactionScopeOption.Required);
+        return new UnverifiedServiceRouter<TDbContext>(dbContext, ctx, TransactionScopeOption.Required);
     }
 }
 
-public sealed class UnverifiedServiceRouter<TContext> : DisposeBase
-    where TContext : DbContext
+public sealed class UnverifiedServiceRouter<TDbContext> : DisposeBase
+    where TDbContext : DbContext
 {
     private readonly TransactionScopeOption _transactionScopeOption;
     private readonly List<Func<Task>> _registeredServices;
 
-    private readonly TContext _dbContext;
+    private readonly TDbContext _dbContext;
     private readonly ISessionContext _currentSessionContext;
     
-    public UnverifiedServiceRouter(TContext context, ISessionContext currentSessionContext, TransactionScopeOption transactionScopeOption)
+    public UnverifiedServiceRouter(TDbContext context, ISessionContext currentSessionContext, TransactionScopeOption transactionScopeOption)
     {
         _dbContext = context;
         _currentSessionContext = currentSessionContext;
@@ -42,10 +42,10 @@ public sealed class UnverifiedServiceRouter<TContext> : DisposeBase
         _registeredServices = new List<Func<Task>>();
     }
     
-    public SessionServiceExecutor<TContext, TService, TRequest, TResult> Register<TService, TRequest, TResult>(TService service)
+    public SessionServiceExecutor<TDbContext, TService, TRequest, TResult> Register<TService, TRequest, TResult>(TService service)
         where TService : IServiceImplBase<TRequest, TResult>
     {
-        var serviceExecutor = new SessionServiceExecutor<TContext, TService, TRequest, TResult>(_dbContext, _currentSessionContext, service);
+        var serviceExecutor = new SessionServiceExecutor<TDbContext, TService, TRequest, TResult>(_dbContext, _currentSessionContext, service);
         _registeredServices.Add(serviceExecutor.ExecuteAsync);
         return serviceExecutor;
     }

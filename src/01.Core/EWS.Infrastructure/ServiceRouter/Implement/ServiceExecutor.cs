@@ -44,9 +44,9 @@ public sealed class SimpleServiceExecutor
     }
 }
 
-public sealed class ServiceExecutor<TContext, TService, TRequest, TResult>
+public sealed class ServiceExecutor<TDbContext, TService, TRequest, TResult>
     where TService : IServiceImplBase<TRequest, TResult>
-    where TContext : DbContext
+    where TDbContext : DbContext
 {
     private readonly IHttpContextAccessor _accessor;
     private readonly List<Func<bool>> _filters = new();
@@ -59,27 +59,27 @@ public sealed class ServiceExecutor<TContext, TService, TRequest, TResult>
         _accessor = accessor;
     }
 
-    public ServiceExecutor<TContext, TService, TRequest, TResult> SetValidator(Func<AbstractValidator<TRequest>> func)
+    public ServiceExecutor<TDbContext, TService, TRequest, TResult> SetValidator(Func<AbstractValidator<TRequest>> func)
     {
         _validator = func;
         return this;
     }
 
-    public ServiceExecutor<TContext, TService, TRequest, TResult> AddFilter(Func<bool> filter)
+    public ServiceExecutor<TDbContext, TService, TRequest, TResult> AddFilter(Func<bool> filter)
     {
         // Logic for adding filter
         _filters.Add(filter);
         return this;
     }
 
-    public ServiceExecutor<TContext, TService, TRequest, TResult> SetParameter(Func<TRequest> parameter)
+    public ServiceExecutor<TDbContext, TService, TRequest, TResult> SetParameter(Func<TRequest> parameter)
     {
         // Logic for setting parameter
         _setParameter = parameter;
         return this;
     }
     
-    public ServiceExecutor<TContext, TService, TRequest, TResult> Executed(Action<TResult> executed)
+    public ServiceExecutor<TDbContext, TService, TRequest, TResult> Executed(Action<TResult> executed)
     {
         // Logic for setting executed action
         _executed = executed;
@@ -104,7 +104,7 @@ public sealed class ServiceExecutor<TContext, TService, TRequest, TResult>
             if (valid.IsValid.xIsFalse()) throw new Exception(valid.Errors.xJoin());
         }
         
-        var db = _accessor.HttpContext!.RequestServices.GetRequiredService<TContext>();
+        var db = _accessor.HttpContext!.RequestServices.GetRequiredService<TDbContext>();
         var service = _accessor.HttpContext!.RequestServices.GetRequiredService<TService>();
         var session = _accessor.HttpContext!.RequestServices.GetRequiredService<ISessionContext>();
         service.DbContext = db;

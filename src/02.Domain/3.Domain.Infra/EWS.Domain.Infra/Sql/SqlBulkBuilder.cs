@@ -26,7 +26,6 @@ public class SqlBulkBuilder<T>
     public async Task BulkInsertAsync(string schema, string tableName, T[] items)
     {
         if (items.xIsEmpty()) return;
-        if (items.Length > BATCH_LIMIT) throw new NotSupportedException($"Max batch size limit is {BATCH_LIMIT}");
         
         for (var i = 0; i < items.Length; i++)
         {

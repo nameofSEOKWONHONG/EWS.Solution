@@ -38,7 +38,7 @@ public class TokenReflashService : ScopeServiceImpl<TokenReflashService, Refresh
         }
 
         ClaimsPrincipal userPrincipal = null;
-        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor, TransactionScopeOption.Suppress))
+        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor))
         {
             sr.Register<IGetPrincipalFromExpiredTokenService, string, ClaimsPrincipal>()
                 .AddFilter(() => this.Request.xIsNotEmpty())
@@ -65,7 +65,7 @@ public class TokenReflashService : ScopeServiceImpl<TokenReflashService, Refresh
         }
         
         string token = string.Empty;
-        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor, TransactionScopeOption.Suppress))
+        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor))
         {
             SigningCredentials signingCredentials = null;
             IEnumerable<Claim> claims = null;

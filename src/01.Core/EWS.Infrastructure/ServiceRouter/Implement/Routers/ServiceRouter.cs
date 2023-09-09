@@ -1,4 +1,6 @@
-﻿using System.Transactions;
+﻿using System.Data;
+using System.Data.Common;
+using System.Transactions;
 using EWS.Application;
 using EWS.Infrastructure.ServiceRouter.Abstract;
 using eXtensionSharp;
@@ -20,25 +22,50 @@ public sealed class ServiceRouter
     /// <param name="transactionScopeOption"></param>
     /// <typeparam name="TDbContext"></typeparam>
     /// <returns></returns>
-    public static ServiceRouter<TDbContext> Create<TDbContext>(IHttpContextAccessor accessor,TransactionScopeOption transactionScopeOption)
+    // public static ServiceRouter<TDbContext> Create<TDbContext>(IHttpContextAccessor accessor,TransactionScopeOption transactionScopeOption)
+    //     where TDbContext : DbContext
+    // {
+    //     return new ServiceRouter<TDbContext>(accessor, transactionScopeOption);
+    // }
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="accessor"></param>
+    /// <param name="isolationLevel"></param>
+    /// <typeparam name="TDbContext"></typeparam>
+    /// <returns></returns>
+    public static ServiceRouter<TDbContext> Create<TDbContext>(IHttpContextAccessor accessor,IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted)
         where TDbContext : DbContext
     {
-        return new ServiceRouter<TDbContext>(accessor, transactionScopeOption);
-    }
+        return new ServiceRouter<TDbContext>(accessor, isolationLevel);
+    }    
 }
 
 public sealed class ServiceRouter<TDbContext> : DisposeBase
     where TDbContext : DbContext
 {
     private readonly TransactionScopeOption _transactionScopeOption;
+    private readonly IsolationLevel _isolationLevel = IsolationLevel.ReadUncommitted;
     private readonly List<Func<Task>> _registeredServices;
     private readonly IHttpContextAccessor _accessor;
+    private readonly DbContext _dbContext;
+    private IDbContextTransaction _dbContextTransaction = null;
     
-    public ServiceRouter(IHttpContextAccessor accessor, TransactionScopeOption transactionScopeOption)
+    // public ServiceRouter(IHttpContextAccessor accessor, TransactionScopeOption transactionScopeOption)
+    // {
+    //     _accessor = accessor;
+    //     _transactionScopeOption = transactionScopeOption;
+    //     _registeredServices = new List<Func<Task>>();
+    //     _dbContext = this._accessor.HttpContext!.RequestServices.GetRequiredService<TDbContext>();
+    // }
+    
+    public ServiceRouter(IHttpContextAccessor accessor, IsolationLevel isolationLevel)
     {
         _accessor = accessor;
-        _transactionScopeOption = transactionScopeOption;
+        _isolationLevel = isolationLevel;
         _registeredServices = new List<Func<Task>>();
+        _dbContext = this._accessor.HttpContext!.RequestServices.GetRequiredService<TDbContext>();
     }
     
     public ServiceExecutor<TDbContext, TService, TRequest, TResult> Register<TService, TRequest, TResult>()
@@ -58,46 +85,28 @@ public sealed class ServiceRouter<TDbContext> : DisposeBase
     
     public async Task ExecuteAsync()
     {
+        if (_dbContext.Database.CurrentTransaction.xIsEmpty())
+        {   
+            _dbContextTransaction = await _dbContext.Database.BeginTransactionAsync(_isolationLevel);
+        }
+        
         foreach (var service in _registeredServices)
         {
-            var db = this._accessor.HttpContext!.RequestServices.GetRequiredService<TDbContext>();
-            
-            IDbContextTransaction tran = null;
-            if (db.Database.CurrentTransaction.xIsEmpty())
-            {
-                if (_transactionScopeOption == TransactionScopeOption.Required)
-                {
-                    tran = await db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, new CancellationToken()); 
-                }
-                else
-                {
-                    tran = await db.Database.BeginTransactionAsync(IsolationLevel.ReadUncommitted, new CancellationToken());    
-                }
-            }
-            
             try
-            { 
+            {
                 await service.Invoke();
-                if (tran.xIsNotEmpty())
-                {
-                    await tran!.CommitAsync();    
-                }
-                db.ChangeTracker.Clear();
+                if (_dbContextTransaction.xIsNotEmpty()) await _dbContextTransaction!.CommitAsync();
             }
             catch (Exception e)
             {
-                if (tran.xIsNotEmpty())
-                {
-                    await tran!.RollbackAsync();    
-                }
+                if (_dbContextTransaction.xIsNotEmpty()) await _dbContextTransaction!.RollbackAsync();
                 Log.Logger.Error(e, "Service Router Error : {Error}", e.Message);
                 throw;
+            }
+            finally
+            {
+                _dbContext.ChangeTracker.Clear();
             }
         }
     }
 }
-
-
-
-
-

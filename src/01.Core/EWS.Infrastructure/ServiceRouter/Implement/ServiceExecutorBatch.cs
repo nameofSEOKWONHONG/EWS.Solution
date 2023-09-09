@@ -8,9 +8,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EWS.Infrastructure.ServiceRouter.Implement;
 
-public sealed class ServiceExecutorBatch<TContext, TService, TRequest, TResult>
+public sealed class ServiceExecutorBatch<TDbContext, TService, TRequest, TResult>
     where TService : IServiceImplBase<TRequest, TResult>
-    where TContext : DbContext
+    where TDbContext : DbContext
 {
     private readonly IHttpContextAccessor _accessor;
     private readonly List<Func<TRequest, bool>> _filters = new();
@@ -22,21 +22,21 @@ public sealed class ServiceExecutorBatch<TContext, TService, TRequest, TResult>
         this._accessor = accessor;
     }
     
-    public ServiceExecutorBatch<TContext, TService, TRequest, TResult> AddFilter(Func<TRequest, bool> filter)
+    public ServiceExecutorBatch<TDbContext, TService, TRequest, TResult> AddFilter(Func<TRequest, bool> filter)
     {
         // Logic for adding filter
         _filters.Add(filter);
         return this;
     }
 
-    public ServiceExecutorBatch<TContext, TService, TRequest, TResult> SetParameter(Func<TRequest, TRequest> parameter)
+    public ServiceExecutorBatch<TDbContext, TService, TRequest, TResult> SetParameter(Func<TRequest, TRequest> parameter)
     {
         // Logic for setting parameter
         _setParameter = parameter;
         return this;
     }
     
-    public ServiceExecutorBatch<TContext, TService, TRequest, TResult> Executed(Action<TResult> executed)
+    public ServiceExecutorBatch<TDbContext, TService, TRequest, TResult> Executed(Action<TResult> executed)
     {
         // Logic for setting executed action
         _executed = executed;
@@ -52,7 +52,7 @@ public sealed class ServiceExecutorBatch<TContext, TService, TRequest, TResult>
         }
 
         var service = _accessor.HttpContext.RequestServices.GetRequiredService<TService>();
-        service.DbContext = _accessor.HttpContext.RequestServices.GetRequiredService<TContext>();
+        service.DbContext = _accessor.HttpContext.RequestServices.GetRequiredService<TDbContext>();
         var session = _accessor.HttpContext.RequestServices.GetRequiredService<ISessionContext>();
         service.Request = _setParameter.Invoke(request);
         var executing = await service.OnExecutingAsync(session);

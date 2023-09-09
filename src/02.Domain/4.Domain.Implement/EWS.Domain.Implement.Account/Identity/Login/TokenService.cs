@@ -98,7 +98,7 @@ public class TokenService : ScopeServiceImpl<TokenService, TokenRequest, IResult
         }
 
         string token = string.Empty;
-        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor, TransactionScopeOption.Required))
+        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor))
         {
             sr.Register<IGetRefreshTokenService, User, string>()
                 .AddFilter(() => user.xIsNotEmpty())

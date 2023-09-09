@@ -12,6 +12,7 @@ using EWS.Infrastructure.ServiceRouter.Implement.Routers;
 using eXtensionSharp;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
+using IsolationLevel = System.Data.IsolationLevel;
 
 namespace EWS.WebApi.Server.Controllers;
 
@@ -34,7 +35,7 @@ public class WeatherForecastController : JControllerBase
     [HttpGet("getall")]
     public async Task<JPaginatedResult<WeatherForecastResult>> GetAll([FromQuery]WeatherForecatGetAllRequest request)
     {
-        using var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor, TransactionScopeOption.Suppress);
+        using var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor);
 
         JPaginatedResult<WeatherForecastResult> result = null;
         sr.Register<IWeatherForecastGetAllService, WeatherForecatGetAllRequest, JPaginatedResult<WeatherForecastResult>>()
@@ -56,7 +57,7 @@ public class WeatherForecastController : JControllerBase
     public async Task<WeatherForecastResult> Get(int id)
     {   
         WeatherForecastResult result = null;
-        using var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor, TransactionScopeOption.Suppress);
+        using var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor);
         var now = DateTime.Now;
         sr.Register<IWeatherForecastGetService, int, WeatherForecastResult>()
             .AddFilter(() => true)
@@ -75,7 +76,7 @@ public class WeatherForecastController : JControllerBase
     public async Task<IActionResult> Add(WeatherForecast request)
     {
         IResultBase<int> result = null;
-        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor, TransactionScopeOption.Required))
+        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor))
         {
             sr.Register<IWeatherForecastAddService, WeatherForecast, IResultBase<int>>()
                 .AddFilter(() => request.Id <= 0)
@@ -110,7 +111,7 @@ public class WeatherForecastController : JControllerBase
     public async Task<IActionResult> CallWorker(string connectionId)
     {
         var result = new List<WeatherForecastResult>();
-        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor, TransactionScopeOption.Suppress))
+        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor))
         {
             sr.Register<IWeatherForecastServiceV2, string, WeatherForecastResult>()
                 .AddFilter(() => connectionId.xIsNotEmpty())
@@ -152,7 +153,7 @@ public class WeatherForecastController : JControllerBase
             });
         });
         
-        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor, TransactionScopeOption.Required))
+        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor))
         {
             sr.Register<IWeatherForecastBulkInsertService, IEnumerable<WeatherForecastBulkRequest>, IResultBase>()
                 .AddFilter(() => list.Count > 0)

@@ -31,7 +31,7 @@ public class GenerateJwtTokenService: ScopeServiceImpl<GenerateJwtTokenService, 
     {
         SigningCredentials signingCredentials = null;
         IEnumerable<Claim> claims = null;
-        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor, TransactionScopeOption.Suppress))
+        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor))
         {
             sr.Register<IGetClaimsService, User, IEnumerable<Claim>>()
                 .AddFilter(() => this.Request.xIsNotEmpty())

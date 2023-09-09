@@ -14,19 +14,20 @@ public sealed class ServiceBatchRouter
     /// <param name="accessor"></param>
     /// <param name="transactionScopeOption"></param>
     /// <param name="items"></param>
-    /// <typeparam name="TEContext"></typeparam>
+    /// <typeparam name="TDbContext"></typeparam>
     /// <typeparam name="TRequest"></typeparam>
+    /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    public static ServiceBatchRouter<TEContext, TRequest, TResult> Create<TEContext, TRequest, TResult>(IHttpContextAccessor accessor,
+    public static ServiceBatchRouter<TDbContext, TRequest, TResult> Create<TDbContext, TRequest, TResult>(IHttpContextAccessor accessor,
         TransactionScopeOption transactionScopeOption, IEnumerable<TRequest> items)
-        where TEContext : DbContext
+        where TDbContext : DbContext
     {
-        return new ServiceBatchRouter<TEContext, TRequest, TResult>(accessor, transactionScopeOption, items);
+        return new ServiceBatchRouter<TDbContext, TRequest, TResult>(accessor, transactionScopeOption, items);
     }
 }
 
-public sealed class ServiceBatchRouter<TContext, TRequest, TResult> : DisposeBase
-    where TContext : DbContext
+public sealed class ServiceBatchRouter<TDbContext, TRequest, TResult> : DisposeBase
+    where TDbContext : DbContext
 {
     private readonly TransactionScopeOption _transactionScopeOption;
     private readonly List<Func<TRequest, Task>> _registeredServices;
@@ -41,10 +42,10 @@ public sealed class ServiceBatchRouter<TContext, TRequest, TResult> : DisposeBas
         _items = items;
     }
 
-    public ServiceExecutorBatch<TContext, TService, TRequest, TResult> Register<TService>()
+    public ServiceExecutorBatch<TDbContext, TService, TRequest, TResult> Register<TService>()
         where TService : IServiceImplBase<TRequest, TResult>
     {
-        var serviceExecutor = new ServiceExecutorBatch<TContext, TService, TRequest, TResult>(_accessor);
+        var serviceExecutor = new ServiceExecutorBatch<TDbContext, TService, TRequest, TResult>(_accessor);
         _registeredServices.Add(serviceExecutor.ExecuteAsync);
         return serviceExecutor;
     }

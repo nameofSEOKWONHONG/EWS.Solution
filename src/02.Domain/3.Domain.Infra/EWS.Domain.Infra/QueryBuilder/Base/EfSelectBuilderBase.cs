@@ -1,4 +1,5 @@
-﻿using EWS.Domain.Base;
+﻿using System.Data;
+using EWS.Domain.Base;
 using EWS.Domain.Infra.Extension;
 using EWS.Entity;
 using EWS.Entity.Base;
@@ -14,7 +15,7 @@ where TEntity : EntityBase
     protected JRequestBase RequestBase;
     protected EfSelectBuilderBase(DbContext db, ISessionContext ctx) : base(db, ctx)
     {
-        
+        db.Database.ExecuteSqlRaw("SET NOCOUNT ON; ");
     }
 
     public abstract Task<TEntity> ToFirstAsync();

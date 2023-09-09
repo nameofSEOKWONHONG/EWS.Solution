@@ -29,7 +29,7 @@ public class UserController : JSessionControllerBase
     {
         JPaginatedResult<UserResult> result = null;
         
-        using var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor, TransactionScopeOption.Required);
+        using var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor);
         sr.Register<IGetAllUsersService, GetAllUsersRequest, JPaginatedResult<UserResult>>()
             .AddFilter(() => request.xIsNotEmpty())
             .SetParameter(() => request)

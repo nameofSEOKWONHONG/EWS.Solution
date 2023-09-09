@@ -1,9 +1,12 @@
+using System.Transactions;
 using EWS.Domain.Abstraction.WeatherForecast;
 using EWS.Domain.Base;
 using EWS.Domain.Common.Enums;
 using EWS.Domain.Example;
 using EWS.Domain.Infra.QueryBuilder.NumberEntityBase;
+using EWS.Entity.Db;
 using EWS.Infrastructure.ServiceRouter.Abstract;
+using EWS.Infrastructure.ServiceRouter.Implement.Routers;
 using EWS.Infrastructure.Session.Abstract;
 using eXtensionSharp;
 using Microsoft.AspNetCore.Http;
@@ -45,5 +48,18 @@ public class WeatherForecastGetAllService : ScopeServiceImpl<WeatherForecastGetA
 
                 return list;
             });
+        
+        WeatherForecastResult result = null;
+        using var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor);
+        var now = DateTime.Now;
+        sr.Register<IWeatherForecastGetService, int, WeatherForecastResult>()
+            .AddFilter(() => true)
+            .SetParameter(() => this.Result.Data.First().Id)
+            .Executed(res =>
+            {
+                result = res;
+            });
+
+        await sr.ExecuteAsync();
     }
 }

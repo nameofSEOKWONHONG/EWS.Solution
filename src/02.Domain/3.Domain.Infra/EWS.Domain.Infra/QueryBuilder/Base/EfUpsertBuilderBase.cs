@@ -10,7 +10,7 @@ public abstract class EfUpsertBuilderBase<TEntity> : EfBuilderBase<TEntity>
 
     protected EfUpsertBuilderBase(DbContext db, ISessionContext ctx) : base(db, ctx)
     {
-        
+        db.Database.ExecuteSqlRaw("SET NOCOUNT OFF; ");
     }
 
     public abstract Task<TEntity> ExecuteAsync();

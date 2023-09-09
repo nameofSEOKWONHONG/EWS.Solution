@@ -10,7 +10,7 @@ internal class EfActiveBuilderBase<TEntity>: EfBuilderBase<TEntity>
 {
     public EfActiveBuilderBase(DbContext db, ISessionContext ctx) : base(db, ctx)
     {
-        
+        db.Database.ExecuteSqlRaw("SET NOCOUNT OFF; ");
     }
     
     public EfActiveBuilderBase<TEntity> SetQueryable(Func<IQueryable<TEntity>, IQueryable<TEntity>> onQueryable)
