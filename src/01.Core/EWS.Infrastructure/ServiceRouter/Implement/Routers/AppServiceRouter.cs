@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Infrastructure.ServiceRouter.Implement.Routers;
 
-public sealed class UnverifiedServiceRouter
+public sealed class AppServiceRouter
 {
     /// <summary>
     /// Controller이외에 호출되는 ServiceRouter, 직접 DB 선언이 필요하고 ISessionContext는 UnverifiedSessionContext를 사용해야 한다.
@@ -16,15 +16,15 @@ public sealed class UnverifiedServiceRouter
     /// <param name="transactionScopeOption"></param>
     /// <typeparam name="TDbContext"></typeparam>
     /// <returns></returns>
-    public static UnverifiedServiceRouter<TDbContext> Create<TDbContext>(TDbContext dbContext, ISessionContext ctx,
+    public static AppServiceRouter<TDbContext> Create<TDbContext>(TDbContext dbContext, ISessionContext ctx,
         TransactionScopeOption transactionScopeOption)
         where TDbContext : DbContext
     {
-        return new UnverifiedServiceRouter<TDbContext>(dbContext, ctx, TransactionScopeOption.Required);
+        return new AppServiceRouter<TDbContext>(dbContext, ctx, TransactionScopeOption.Required);
     }
 }
 
-public sealed class UnverifiedServiceRouter<TDbContext> : DisposeBase
+public sealed class AppServiceRouter<TDbContext> : DisposeBase
     where TDbContext : DbContext
 {
     private readonly TransactionScopeOption _transactionScopeOption;
@@ -33,7 +33,7 @@ public sealed class UnverifiedServiceRouter<TDbContext> : DisposeBase
     private readonly TDbContext _dbContext;
     private readonly ISessionContext _currentSessionContext;
     
-    public UnverifiedServiceRouter(TDbContext context, ISessionContext currentSessionContext, TransactionScopeOption transactionScopeOption)
+    public AppServiceRouter(TDbContext context, ISessionContext currentSessionContext, TransactionScopeOption transactionScopeOption)
     {
         _dbContext = context;
         _currentSessionContext = currentSessionContext;

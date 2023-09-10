@@ -2,7 +2,7 @@
 using EWS.Domain.Infra.Middleware;
 using Serilog;
 
-namespace EWS.WebApi.Server;
+namespace EWS.WebApi.Server.Setup.ProgramSetups;
 
 /// <summary>
 /// 

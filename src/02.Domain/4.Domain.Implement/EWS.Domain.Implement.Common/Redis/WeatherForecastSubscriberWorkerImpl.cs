@@ -33,7 +33,7 @@ public class WeatherForecastSubscriberWorkerImpl : RedisSubscriberWorkerImplBase
         var hostNotificationService = scope.ServiceProvider.GetRequiredService<IHostNotificationService>();
 
         WeatherForecastResult result = null;
-        using (var sr = UnverifiedServiceRouter.Create(dbContext, SessionContext, TransactionScopeOption.Suppress))
+        using (var sr = AppServiceRouter.Create(dbContext, SessionContext, TransactionScopeOption.Suppress))
         {
             var req = this.RedisWorkerProtocol.Request.xToEntity<WeatherForecastResult>();
             Log.Logger.Debug("Debug:{REQ}", req);

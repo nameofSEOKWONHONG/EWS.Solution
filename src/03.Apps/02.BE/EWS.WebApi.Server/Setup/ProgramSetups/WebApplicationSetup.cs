@@ -5,7 +5,7 @@ using EWS.Domain.Infra.Redis;
 using EWS.Domain.Infra.Service;
 using Hangfire;
 
-namespace EWS.WebApi.Server;
+namespace EWS.WebApi.Server.Setup.ProgramSetups;
 
 /// <summary>
 /// 

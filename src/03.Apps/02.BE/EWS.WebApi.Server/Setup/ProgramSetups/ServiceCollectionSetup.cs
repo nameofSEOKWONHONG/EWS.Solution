@@ -3,13 +3,13 @@ using System.Net;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
-using EWS.Application;
 using EWS.Application.Const;
 using EWS.Application.Language;
 using EWS.Application.Service.Abstract;
 using EWS.Domain;
 using EWS.Domain.Abstraction.Common;
 using EWS.Domain.Base;
+using EWS.Domain.Infra.Kafka;
 using EWS.Domain.Infra.Localizer;
 using EWS.Domain.Infra.Redis;
 using EWS.Domain.Infra.Service;
@@ -32,7 +32,7 @@ using Microsoft.OpenApi.Models;
 using StackExchange.Redis;
 using Role = EWS.Entity.Role;
 
-namespace EWS.WebApi.Server;
+namespace EWS.WebApi.Server.Setup.ProgramSetups;
 
 /// <summary>
 /// 
@@ -456,6 +456,19 @@ public static class ServiceCollectionSetup
         services.AddTransient<RootCreator>();
         services.AddTransient<AdminCreator>();
         services.AddTransient<RoleClaimCreator>();
+        return services;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="configuration"></param>
+    /// <returns></returns>
+    public static IServiceCollection vAddKafkaHostedService(this IServiceCollection services, ConfigurationManager configuration)
+    {
+        services.Configure<ApacheKafkaOption>(configuration.GetSection("ApacheKafkaOption"));
+        services.AddSingleton<IHostedService, ApacheKafkaConsumerHostService>();
         return services;
     }
 }

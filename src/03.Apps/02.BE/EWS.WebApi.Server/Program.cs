@@ -7,6 +7,7 @@ using EWS.Domain.Infra.Service;
 using EWS.WebApi.Server;
 using EWS.WebApi.Server.ApplicationInitializer;
 using EWS.WebApi.Server.ApplicationInitializer.Tenant;
+using EWS.WebApi.Server.Setup.ProgramSetups;
 using eXtensionSharp;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,6 +24,7 @@ builder.Services.vAddDatabase()
     .vAddRedis(builder.Configuration)
     .vAddCors()
     .vAddTenantInit()
+    .vAddKafkaHostedService(builder.Configuration)
     .AddHttpContextAccessor()
     .AddAuthorizationCore()
     .AddSingleton<NotificationHub>();
