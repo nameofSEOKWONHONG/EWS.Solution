@@ -10,6 +10,7 @@ using EWS.Domain;
 using EWS.Domain.Abstraction.Common;
 using EWS.Domain.Base;
 using EWS.Domain.Infra.Kafka;
+using EWS.Domain.Infra.Kafka.Abstract;
 using EWS.Domain.Infra.Localizer;
 using EWS.Domain.Infra.Redis;
 using EWS.Domain.Infra.Service;
@@ -325,6 +326,7 @@ public static class ServiceCollectionSetup
         #region [manual injection version]
 
         services.AddTransient<IHostNotificationService, HostNotificationService>();
+        services.AddTransient<IApacheKafkaProducerService, ApacheKafkaProducerService>();
 
         var type = typeof(IServiceProviderRegister);
         var types = AppDomain.CurrentDomain.GetAssemblies()
@@ -456,19 +458,6 @@ public static class ServiceCollectionSetup
         services.AddTransient<RootCreator>();
         services.AddTransient<AdminCreator>();
         services.AddTransient<RoleClaimCreator>();
-        return services;
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="services"></param>
-    /// <param name="configuration"></param>
-    /// <returns></returns>
-    public static IServiceCollection vAddKafkaHostedService(this IServiceCollection services, ConfigurationManager configuration)
-    {
-        services.Configure<ApacheKafkaOption>(configuration.GetSection("ApacheKafkaOption"));
-        services.AddSingleton<IHostedService, ApacheKafkaConsumerHostService>();
         return services;
     }
 }

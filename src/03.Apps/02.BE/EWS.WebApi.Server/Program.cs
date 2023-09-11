@@ -2,6 +2,8 @@ using EWS.Application.Const;
 using EWS.Domain.Abstraction.Common;
 using EWS.Domain.Implement.Common.Redis.Subscribe;
 using EWS.Domain.Infra.Hubs;
+using EWS.Domain.Infra.Kafka;
+using EWS.Domain.Infra.Kafka.Abstract;
 using EWS.Domain.Infra.Redis;
 using EWS.Domain.Infra.Service;
 using EWS.WebApi.Server;
@@ -24,7 +26,6 @@ builder.Services.vAddDatabase()
     .vAddRedis(builder.Configuration)
     .vAddCors()
     .vAddTenantInit()
-    .vAddKafkaHostedService(builder.Configuration)
     .AddHttpContextAccessor()
     .AddAuthorizationCore()
     .AddSingleton<NotificationHub>();
@@ -48,6 +49,17 @@ await redisSubscriber.SubscribeToChannelAsync(ApplicationConstants.Redis.Message
 
 var host = app.Services.GetRequiredService<IHostNotificationService>();
 await host.NotificationAsync();
+
+var producer = app.Services.GetRequiredService<IApacheKafkaProducerService>();
+var option = builder.Configuration.GetSection("ApacheKafkaOption").Get<ApacheKafkaOption>();
+await producer.ProduceAsync<OrderRequest>(option.BootstrapServers, option.Topic, new OrderRequest()
+{
+    OrderId = 1,
+    ProductId = 1,
+    CustomerId = 1,
+    Quantity = 10,
+    Status = "Ready"
+});
 
 if (args.xIsNotEmpty() && args.xContains(new string[]{"run", "es-init" }))
 {

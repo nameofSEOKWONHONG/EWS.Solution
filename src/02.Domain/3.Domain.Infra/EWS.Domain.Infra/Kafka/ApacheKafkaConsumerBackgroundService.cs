@@ -6,21 +6,32 @@ using Serilog;
 
 namespace EWS.Domain.Infra.Kafka;
 
-public class ApacheKafkaConsumerHostService : IHostedService
+public class ApacheKafkaConsumerCallback
 {
-    private readonly Serilog.ILogger _logger;
-    private ApacheKafkaOption _apacheKafkaOption;
-    public ApacheKafkaConsumerHostService(ILogger logger, IOptionsMonitor<ApacheKafkaOption> options)
+    public Action<OrderProcessingRequest> Callback { get; set; }
+    public ApacheKafkaConsumerCallback()
     {
-        _logger = logger;
+        
+    }
+}
+
+public class ApacheKafkaConsumerBackgroundService : BackgroundService
+{
+    private Serilog.ILogger _logger => Serilog.Log.Logger;
+    private ApacheKafkaOption _apacheKafkaOption;
+    private ApacheKafkaConsumerCallback _callback;
+    
+    public ApacheKafkaConsumerBackgroundService(IOptionsMonitor<ApacheKafkaOption> options, ApacheKafkaConsumerCallback callback)
+    {
         _apacheKafkaOption = options.CurrentValue;
+        _callback = callback;
         options.OnChange((config) =>
         {
             _apacheKafkaOption = config;
         });
     }
-    
-    public Task StartAsync(CancellationToken cancellationToken)
+
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var config = new ConsumerConfig()
         {
@@ -33,19 +44,21 @@ public class ApacheKafkaConsumerHostService : IHostedService
         {
             using var consumerBuilder = new ConsumerBuilder<Ignore, string>(config).Build();
             consumerBuilder.Subscribe(_apacheKafkaOption.Topic);
-            var cancelToken = new CancellationTokenSource();
-
+            
             try
             {
                 while (true)
                 {
-                    var consumer = consumerBuilder.Consume(cancelToken.Token);
+                    var consumer = consumerBuilder.Consume(stoppingToken);
                     var orderRequest = JsonSerializer.Deserialize<OrderProcessingRequest>(consumer.Message.Value);
                     _logger.Debug("Processing Order Id: {Id}", orderRequest.OrderId);
+                    
+                    _callback.Callback(orderRequest);
                 }
             }
             catch (OperationCanceledException)
             {
+                
                 consumerBuilder.Close();
             }
         }
@@ -55,11 +68,6 @@ public class ApacheKafkaConsumerHostService : IHostedService
             throw;
         }
 
-        return Task.CompletedTask;
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
         return Task.CompletedTask;
     }
 }

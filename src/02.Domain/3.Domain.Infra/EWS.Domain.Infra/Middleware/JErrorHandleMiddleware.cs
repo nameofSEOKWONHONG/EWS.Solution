@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Http;
 
 namespace EWS.Domain.Infra.Middleware;
 
-public sealed class JErrorHandler
+public sealed class JErrorHandleMiddleware
 {
     private readonly RequestDelegate _next;
 
-    public JErrorHandler(RequestDelegate next)
+    public JErrorHandleMiddleware(RequestDelegate next)
     {
         _next = next;
     }

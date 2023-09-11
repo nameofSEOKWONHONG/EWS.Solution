@@ -14,6 +14,7 @@
 
     <ItemGroup>
       <Folder Include="Account\" />
+      <Folder Include="Kafka\" />
     </ItemGroup>
 
     <ItemGroup>

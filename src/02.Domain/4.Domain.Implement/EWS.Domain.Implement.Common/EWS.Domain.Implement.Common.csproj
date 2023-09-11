@@ -19,6 +19,7 @@
     </ItemGroup>
     
     <ItemGroup>
+      <Folder Include="Kafka\" />
       <Folder Include="Node\" />
     </ItemGroup>
     

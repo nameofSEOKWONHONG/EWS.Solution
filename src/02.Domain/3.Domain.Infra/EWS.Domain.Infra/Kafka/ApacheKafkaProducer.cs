@@ -8,13 +8,13 @@ namespace EWS.Domain.Infra.Kafka;
 
 public class ApacheKafkaProducerService : IApacheKafkaProducerService
 {
-    private readonly ILogger _logger;
-    public ApacheKafkaProducerService(ILogger logger)
+    private Serilog.ILogger _logger => Serilog.Log.Logger;
+    public ApacheKafkaProducerService()
     {
-        _logger = logger;
+        
     }
 
-    public async Task<bool> Send<T>(string bootstrapServers, string topic, T sendItem)
+    public async Task<bool> ProduceAsync<T>(string bootstrapServers, string topic, T sendItem)
     where T : class
     {
         var config = new ProducerConfig()

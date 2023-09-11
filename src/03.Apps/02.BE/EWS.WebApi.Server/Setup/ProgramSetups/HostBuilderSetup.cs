@@ -69,7 +69,7 @@ public static class HostBuilderSetup
             return next();
         });
         
-        app.UseMiddleware<JErrorHandler>();
+        app.UseMiddleware<JErrorHandleMiddleware>();
 
         app.UseStaticFiles();
         
