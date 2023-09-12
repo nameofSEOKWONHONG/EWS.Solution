@@ -4,6 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Infrastructure.ServiceRouter.Abstract;
 
+public abstract class TransientServiceImpl : ITransientService
+{
+    
+}
+
 public abstract class TransientServiceImpl<TSelf, TRequest, TResult> : ServiceImplBase<TSelf>,
     IServiceImplBase<TRequest, TResult>, ITransientService
 {

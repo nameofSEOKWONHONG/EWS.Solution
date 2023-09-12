@@ -1,4 +1,5 @@
 ﻿using EWS.Domain.Infra.Kafka;
+using EWS.KafkaConsumer;
 using eXtensionSharp;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,12 +43,16 @@ Log.Logger = new LoggerConfiguration()
                 .CreateLogger();
 #endif
 builder.UseSerilog();
-var host = builder.Build();
 
+var host = builder.Build();
 var callback = host.Services.GetRequiredService<ApacheKafkaConsumerCallback>();
-callback.Callback = (item) =>
+
+async void Callback(OrderProcessingRequest item)
 {
-    Console.WriteLine(item.xToJson());
-};
+    await ConsumerFactory.Create(item.OrderId.xValue<string>())
+        .ExecuteAsync(item);
+}
+
+callback.Callback = Callback;
 
 await host.RunAsync();

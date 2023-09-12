@@ -4,6 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Infrastructure.ServiceRouter.Abstract;
 
+public abstract class SingletonServiceImpl : ISingletonService
+{
+    
+}
+
 public abstract class SingletonServiceImpl<TSelf, TRequest, TResult> : ServiceImplBase<TSelf>, IServiceImplBase<TRequest, TResult>, ISingletonService
 {
     public TRequest Request { get; set; }

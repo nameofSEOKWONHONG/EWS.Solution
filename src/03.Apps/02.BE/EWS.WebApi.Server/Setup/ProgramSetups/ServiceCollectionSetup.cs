@@ -18,6 +18,7 @@ using EWS.Domain.Infra.Session;
 using EWS.Domain.Infra.Session.Accessor;
 using EWS.Entity;
 using EWS.Entity.Db;
+using EWS.Infrastructure.Injecction;
 using EWS.Infrastructure.ServiceRouter.Abstract;
 using EWS.Infrastructure.Session.Abstract;
 using EWS.WebApi.Server.ApplicationInitializer.Tenant;
@@ -342,28 +343,7 @@ public static class ServiceCollectionSetup
 
         #region [scrutor]
 
-        services.Scan(scan => scan
-                .FromAssemblies(
-                    Assembly.Load("EWS.Application"),
-                    Assembly.Load("EWS.Infrastructure"),
-                    Assembly.Load("EWS.Domain.Infra"),
-                    Assembly.Load("EWS.Domain.Abstraction"),
-                    Assembly.Load("EWS.Domain.Implement.Account"),
-                    Assembly.Load("EWS.Domain.Implement.Common"),
-                    Assembly.Load("EWS.Domain.Implement.Example"))
-                .AddClasses(cls => cls.AssignableTo<IScopeService>())
-                .AsImplementedInterfaces()
-                .WithScopedLifetime()
-                // .AddClasses(cls => cls.AssignableTo<ISessionContext>())
-                //     .AsImplementedInterfaces()
-                //     .WithScopedLifetime()
-                .AddClasses(cls => cls.AssignableTo<ITransientService>())
-                .AsImplementedInterfaces()
-                .WithTransientLifetime()
-                .AddClasses(cls => cls.AssignableTo<ISingletonService>())
-                .AsImplementedInterfaces()
-                .WithSingletonLifetime()
-        );   
+        services.AddScan("EWS", ".dll");
 
         #endregion
         return services;
