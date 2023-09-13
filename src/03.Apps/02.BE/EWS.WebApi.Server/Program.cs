@@ -4,6 +4,7 @@ using EWS.Domain.Implement.Common.Redis.Subscribe;
 using EWS.Domain.Infra.Hubs;
 using EWS.Domain.Infra.Kafka;
 using EWS.Domain.Infra.Kafka.Abstract;
+using EWS.Domain.Infra.Mongodb;
 using EWS.Domain.Infra.Redis;
 using EWS.Domain.Infra.Service;
 using EWS.WebApi.Server;
@@ -26,6 +27,7 @@ builder.Services.vAddDatabase()
     .vAddRedis(builder.Configuration)
     .vAddCors()
     .vAddTenantInit()
+    .vAddMongoDb(builder.Configuration)
     .AddHttpContextAccessor()
     .AddAuthorizationCore()
     .AddSingleton<NotificationHub>();
