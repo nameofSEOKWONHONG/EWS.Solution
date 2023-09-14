@@ -19,9 +19,9 @@ public abstract class ServiceImplBase : IServiceImplBase
         Accessor = accessor;
     }
     
-    public abstract Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context);
+    public abstract Task<bool> OnExecutingAsync();
 
-    public abstract Task OnExecuteAsync(DbContext dbContext, ISessionContext context);
+    public abstract Task OnExecuteAsync();
 }
 
 public abstract class ServiceImplBase<TSelf> : ServiceImplBase
@@ -29,11 +29,15 @@ public abstract class ServiceImplBase<TSelf> : ServiceImplBase
     protected ServiceImplBase() : base()
     {
         Logger.Debug("Create instance {Name}", typeof(TSelf).Name);
-
     }
+}
 
-    protected ServiceImplBase(IHttpContextAccessor accessor) : base(accessor)
-    {
-        
-    }
+public abstract class ServiceImplBase<TSelf, TRequest, TResult> : IServiceImplBase<TRequest, TResult>
+{
+    public abstract Task<bool> OnExecutingAsync();
+
+    public abstract Task OnExecuteAsync();
+
+    public TRequest Request { get; set; }
+    public TResult Result { get; set; }
 }

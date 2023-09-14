@@ -1,35 +1,43 @@
 ﻿using System.Security.Claims;
-using System.Transactions;
 using EWS.Domain.Abstraction.Account.Identity;
+using EWS.Domain.Infrastructure;
 using EWS.Entity;
 using EWS.Entity.Db;
 using EWS.Infrastructure.ServiceRouter.Abstract;
-using EWS.Infrastructure.ServiceRouter.Implement.Routers;
-using EWS.Infrastructure.Session.Abstract;
 using eXtensionSharp;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 
 namespace EWS.Domain.Implement.Account.Identity;
 
-public class GenerateJwtTokenService: ScopeServiceImpl<GenerateJwtTokenService, User, string>, IGenerateJwtTokenService
+public class GenerateJwtTokenService: ServiceImplBase<GenerateJwtTokenService, User, string>, IGenerateJwtTokenService
 {
     private readonly IConfiguration _configuration;
-    public GenerateJwtTokenService(IHttpContextAccessor accessor) : base(accessor)
+    private readonly IGenerateEncryptedToken _service;
+    public GenerateJwtTokenService(IConfiguration configuration, IGenerateEncryptedToken service) : base()
     {
-        _configuration = accessor.HttpContext.RequestServices.GetRequiredService<IConfiguration>();
+        _configuration = configuration;
+        _service = service;
     }
-
-    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    
+    public override Task<bool> OnExecutingAsync()
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override async Task OnExecuteAsync()
     {
+        var result = string.Empty;
+        await ServiceLoader<IGenerateEncryptedToken, IdentityGenerateEncryptedTokenRequest, string>.Create(_service)
+            .AddFilter(() => true)
+            .AddFilter(() => true)
+            .SetParameter(() => new IdentityGenerateEncryptedTokenRequest())
+            .OnExecuted((res) =>
+            {
+                result = res;
+                return Task.CompletedTask;
+            });
+        
         SigningCredentials signingCredentials = null;
         IEnumerable<Claim> claims = null;
         using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor))

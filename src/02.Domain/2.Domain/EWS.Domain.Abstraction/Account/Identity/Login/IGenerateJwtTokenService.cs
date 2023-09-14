@@ -1,9 +1,10 @@
-﻿using EWS.Entity;
+﻿using EWS.Application.Service.Abstract;
+using EWS.Entity;
 using EWS.Infrastructure.ServiceRouter.Abstract;
 
 namespace EWS.Domain.Abstraction.Account.Identity;
 
-public interface IGenerateJwtTokenService : IServiceImplBase<User, string>
+public interface IGenerateJwtTokenService : IServiceImplBase<User, string>, IScopeService
 {
     
 }

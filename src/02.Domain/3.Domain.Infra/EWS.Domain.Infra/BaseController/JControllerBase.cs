@@ -1,10 +1,5 @@
-﻿using System.Transactions;
-using EWS.Infrastructure.ServiceRouter.Abstract;
-using EWS.Infrastructure.ServiceRouter.Implement.Routers;
-using eXtensionSharp;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Infra;
 

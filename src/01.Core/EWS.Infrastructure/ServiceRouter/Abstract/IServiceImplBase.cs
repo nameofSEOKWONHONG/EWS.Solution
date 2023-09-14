@@ -5,8 +5,8 @@ namespace EWS.Infrastructure.ServiceRouter.Abstract;
 
 public interface IServiceImplBase
 {
-    Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context);
-    Task OnExecuteAsync(DbContext dbContext, ISessionContext context);
+    Task<bool> OnExecutingAsync();
+    Task OnExecuteAsync();
 }
 
 public interface IServiceImplBase<TRequest, TResult> : IServiceImplBase

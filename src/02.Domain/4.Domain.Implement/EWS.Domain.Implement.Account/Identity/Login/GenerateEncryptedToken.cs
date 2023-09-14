@@ -7,18 +7,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Account.Identity;
 
-public class GenerateEncryptedToken : ScopeServiceImpl<GenerateEncryptedToken, IdentityGenerateEncryptedTokenRequest, string>, IGenerateEncryptedToken
+public class GenerateEncryptedToken : ServiceImplBase<GenerateEncryptedToken, IdentityGenerateEncryptedTokenRequest, string>, IGenerateEncryptedToken
 {
-    public GenerateEncryptedToken(IHttpContextAccessor accessor) : base(accessor)
+    public GenerateEncryptedToken() : base()
     {
     }
 
-    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    public override Task<bool> OnExecutingAsync()
     {
         return Task.FromResult(true);
     }
 
-    public override Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override Task OnExecuteAsync()
     {
         var token = new JwtSecurityToken(
             claims: this.Request.Claims,
