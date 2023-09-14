@@ -34,6 +34,20 @@ public abstract class ServiceImplBase<TSelf> : ServiceImplBase
 
 public abstract class ServiceImplBase<TSelf, TRequest, TResult> : IServiceImplBase<TRequest, TResult>
 {
+    protected readonly DbContext Db;
+    protected readonly ISessionContext Context;
+
+    protected ServiceImplBase()
+    {
+        
+    }
+    
+    protected ServiceImplBase(DbContext dbContext, ISessionContext context)
+    {
+        Db = dbContext;
+        Context = context;
+    }
+    
     public abstract Task<bool> OnExecutingAsync();
 
     public abstract Task OnExecuteAsync();

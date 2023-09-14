@@ -17,23 +17,23 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EWS.Domain.Implement.Account.Identity;
 
-public class RegisterService : ScopeServiceImpl<RegisterService, RegisterRequest, IResultBase>, IRegisterService
+public class RegisterService : ServiceImplBase<RegisterService, RegisterRequest, IResultBase>, IRegisterService
 {
     private readonly IPasswordHasher<User> _passwordHasher;
-    public RegisterService(IHttpContextAccessor accessor) : base(accessor)
+    public RegisterService(DbContext dbContext, ISessionContext context, IPasswordHasher<User> passwordHasher) : base(dbContext, context)
     {
-        _passwordHasher = this.Accessor.HttpContext.RequestServices.GetRequiredService<IPasswordHasher<User>>();
+        _passwordHasher = passwordHasher;
     }
 
-    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    public override Task<bool> OnExecutingAsync()
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override async Task OnExecuteAsync()
     {
-        var userSet = dbContext.Set<User>();
-        var userWithSameUserName = await userSet.FirstOrDefaultAsync(m => m.TenantId == context.TenantId && m.UserName == this.Request.UserName);
+        var userSet = Db.Set<User>();
+        var userWithSameUserName = await userSet.FirstOrDefaultAsync(m => m.TenantId == Context.TenantId && m.UserName == this.Request.UserName);
         if (userWithSameUserName.xIsNotEmpty())
         {
             this.Result = await JResult.FailAsync($"User name {userWithSameUserName} is already taken.");
@@ -42,7 +42,7 @@ public class RegisterService : ScopeServiceImpl<RegisterService, RegisterRequest
         
         var user = new User()
         {
-            TenantId       = context.TenantId,
+            TenantId       = Context.TenantId,
             Email          = this.Request.Email,
             FirstName      = this.Request.FirstName,
             LastName       = this.Request.LastName,
@@ -57,7 +57,7 @@ public class RegisterService : ScopeServiceImpl<RegisterService, RegisterRequest
 
         if (this.Request.PhoneNumber.xIsNotEmpty())
         {
-            var userWithSamePhoneNumber = await userSet.FirstOrDefaultAsync(x => x.TenantId == context.TenantId && 
+            var userWithSamePhoneNumber = await userSet.FirstOrDefaultAsync(x => x.TenantId == Context.TenantId && 
                 x.PhoneNumber == this.Request.PhoneNumber.vToAESEncrypt());
             if (userWithSamePhoneNumber.xIsNotEmpty())
             {
@@ -67,7 +67,7 @@ public class RegisterService : ScopeServiceImpl<RegisterService, RegisterRequest
             }
         }
         
-        var userWithSameEmail = await userSet.FirstOrDefaultAsync(m => m.TenantId == context.TenantId && m.Email == this.Request.Email);
+        var userWithSameEmail = await userSet.FirstOrDefaultAsync(m => m.TenantId == Context.TenantId && m.Email == this.Request.Email);
         if (userWithSameEmail.xIsNotEmpty())
         {
             this.Result = await JResult.FailAsync($"User email {userWithSameEmail} is already registered.");
@@ -75,22 +75,22 @@ public class RegisterService : ScopeServiceImpl<RegisterService, RegisterRequest
 
         var hashedPassword = _passwordHasher.HashPassword(user, Request.Password);
         user.PasswordHash = hashedPassword;
-        user.SecurityStamp = $"{user.Id}{user.FirstName}{user.LastName}{user.Email}{context.CurrentTimeAccessor.Now}".xGetHashCode();
+        user.SecurityStamp = $"{user.Id}{user.FirstName}{user.LastName}{user.Email}{Context.CurrentTimeAccessor.Now}".xGetHashCode();
         await userSet.AddAsync(user);
-        await dbContext.SaveChangesAsync();
+        await Db.SaveChangesAsync();
 
-        var roleDb = dbContext.Set<Role>(); 
-        var basicRole = await roleDb.FirstAsync(m => m.TenantId == context.TenantId &&
+        var roleDb = Db.Set<Role>(); 
+        var basicRole = await roleDb.FirstAsync(m => m.TenantId == Context.TenantId &&
                                                        m.Name == RoleConstants.BasicRole);
 
-        var userRoleSet = dbContext.Set<UserRole>();
+        var userRoleSet = Db.Set<UserRole>();
         await userRoleSet.AddAsync(new UserRole()
         {
-            TenantId = context.TenantId,
+            TenantId = Context.TenantId,
             UserId = user.Id,
             RoleId = basicRole.Id
         });
-        await dbContext.SaveChangesAsync();
+        await Db.SaveChangesAsync();
 
         if (this.Request.AutoConfirmEmail.xIsFalse())
         {

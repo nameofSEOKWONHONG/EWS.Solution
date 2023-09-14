@@ -58,7 +58,7 @@ public class TokenController : JControllerBase
         IResultBase<TokenResponse> result = null;
         
         using var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor);
-        sr.Register<ITokenReflashService, RefreshTokenRequest, IResultBase<TokenResponse>>()
+        sr.Register<ITokenRefreshService, RefreshTokenRequest, IResultBase<TokenResponse>>()
             .AddFilter(() => model.xIsNotEmpty())
             .SetParameter(() => model)
             .Executed(res => result = res);

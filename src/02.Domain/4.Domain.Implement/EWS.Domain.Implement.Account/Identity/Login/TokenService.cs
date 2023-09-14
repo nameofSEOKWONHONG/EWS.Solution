@@ -1,35 +1,38 @@
-﻿using System.Transactions;
-using EWS.Application.Const;
+﻿using EWS.Application.Const;
 using EWS.Application.Wrapper;
 using EWS.Domain.Abstraction.Account.Identity;
 using EWS.Domain.Base;
 using EWS.Domain.Identity;
-using EWS.Domain.Infra.Extension;
+using EWS.Domain.Infrastructure;
 using EWS.Entity;
-using EWS.Entity.Db;
 using EWS.Infrastructure.ServiceRouter.Abstract;
-using EWS.Infrastructure.ServiceRouter.Implement.Routers;
 using EWS.Infrastructure.Session.Abstract;
 using eXtensionSharp;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace EWS.Domain.Implement.Account.Identity;
 
-public class TokenService : ScopeServiceImpl<TokenService, TokenRequest, IResultBase<TokenResponse>>, ITokenService
+public class TokenService : ServiceImplBase<TokenService, TokenRequest, IResultBase<TokenResponse>>, ITokenService
 {
     private readonly IPasswordHasher<User> _passwordHasher;
-    public TokenService(IHttpContextAccessor accessor) : base(accessor)
+    private readonly IGetRefreshTokenService _getRefreshTokenService;
+    private readonly IGenerateJwtTokenService _generateJwtTokenService;
+    public TokenService(DbContext dbContext, 
+        ISessionContext context, 
+        IPasswordHasher<User> passwordHasher,
+        IGetRefreshTokenService getRefreshTokenService,
+        IGenerateJwtTokenService generateJwtTokenService) : base(dbContext, context)
     {
-        _passwordHasher = this.Accessor.HttpContext!.RequestServices.GetRequiredService<IPasswordHasher<User>>();
+        _passwordHasher = passwordHasher;
+        _getRefreshTokenService = getRefreshTokenService;
+        _generateJwtTokenService = generateJwtTokenService;
     }
 
-    public override async Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    public override async Task<bool> OnExecutingAsync()
     {
-        var users = dbContext.Set<User>();
-        var user = await users.FirstOrDefaultAsync(m => m.TenantId == context.TenantId && m.Email == this.Request.Email);
+        var users = Db.Set<User>();
+        var user = await users.FirstOrDefaultAsync(m => m.TenantId == Context.TenantId && m.Email == this.Request.Email);
         if (user.xIsEmpty())
         {
             this.Result = await JResult<TokenResponse>.FailAsync("Access failed.");
@@ -47,7 +50,7 @@ public class TokenService : ScopeServiceImpl<TokenService, TokenRequest, IResult
         {
             user.AccessFailedCount += 1;
             users.Update(user);
-            await dbContext.SaveChangesAsync();
+            await Db.SaveChangesAsync();
             this.Result = await JResult<TokenResponse>.FailAsync( "Access failed.");
             return false;
         }
@@ -55,10 +58,10 @@ public class TokenService : ScopeServiceImpl<TokenService, TokenRequest, IResult
         return true;
     }
 
-    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override async Task OnExecuteAsync()
     {
-        var users = dbContext.Set<User>();
-        var user = await users.FirstOrDefaultAsync(m => m.TenantId == context.TenantId && m.Email == this.Request.Email);
+        var users = Db.Set<User>();
+        var user = await users.FirstOrDefaultAsync(m => m.TenantId == Context.TenantId && m.Email == this.Request.Email);
 
         if (user.xIsEmpty())
         {
@@ -98,27 +101,19 @@ public class TokenService : ScopeServiceImpl<TokenService, TokenRequest, IResult
         }
 
         string token = string.Empty;
-        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor))
-        {
-            sr.Register<IGetRefreshTokenService, User, string>()
-                .AddFilter(() => user.xIsNotEmpty())
-                .SetParameter(() => user)
-                .Executed(res =>
-                {
-                    user.RefreshToken = res;
-                    user.RefreshTokenExpiryTime = DateTime.Now.AddDays(5);
-                });
-        
-            sr.Register<IGenerateJwtTokenService, User, string>()
-                .AddFilter(() => user.xIsNotEmpty())
-                .SetParameter(() => user)
-                .Executed(res =>
-                {
-                    token = res;
-                });
-        
-            await sr.ExecuteAsync();            
-        }
+        await ServiceLoader<IGetRefreshTokenService, User, string>.Create(_getRefreshTokenService)
+            .AddFilter(() => user.xIsNotEmpty())
+            .SetParameter(() => user)
+            .OnExecuted((res, v) =>
+            {
+                user.RefreshToken = res;
+                user.RefreshTokenExpiryTime = DateTime.Now.AddDays(5);
+            });
+
+        await ServiceLoader<IGenerateJwtTokenService, User, string>.Create(_generateJwtTokenService)
+            .AddFilter(() => user.xIsNotEmpty())
+            .SetParameter(() => user)
+            .OnExecuted((res, v) => token = res);
 
         var response = new TokenResponse()
         {
@@ -126,10 +121,11 @@ public class TokenService : ScopeServiceImpl<TokenService, TokenRequest, IResult
             RefreshToken = user.RefreshToken,
             UserImageURL = string.Empty
         };
+        
         this.Result = await JResult<TokenResponse>.SuccessAsync(response);
 
         user.AccessFailedCount = 0;
         users.Update(user);
-        await dbContext.SaveChangesAsync();
+        await Db.SaveChangesAsync();
     }
 }

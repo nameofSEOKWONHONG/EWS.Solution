@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Account.Identity;
 
-public class GenerateEncryptedToken : ServiceImplBase<GenerateEncryptedToken, IdentityGenerateEncryptedTokenRequest, string>, IGenerateEncryptedToken
+public class GenerateEncryptedTokenService : ServiceImplBase<GenerateEncryptedTokenService, IdentityGenerateEncryptedTokenRequest, string>, IGenerateEncryptedTokenService
 {
-    public GenerateEncryptedToken() : base()
+    public GenerateEncryptedTokenService() : base()
     {
     }
 

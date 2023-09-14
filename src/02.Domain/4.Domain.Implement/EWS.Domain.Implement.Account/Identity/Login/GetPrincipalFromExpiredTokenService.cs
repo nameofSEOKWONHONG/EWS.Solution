@@ -14,23 +14,25 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace EWS.Domain.Implement.Account.Identity;
 
-public class GetPrincipalFromExpiredTokenService : ScopeServiceImpl<GetPrincipalFromExpiredTokenService, string, ClaimsPrincipal>, IGetPrincipalFromExpiredTokenService
+public class GetPrincipalFromExpiredTokenService : ServiceImplBase<GetPrincipalFromExpiredTokenService, string, ClaimsPrincipal>, IGetPrincipalFromExpiredTokenService
 {
-    public GetPrincipalFromExpiredTokenService(IHttpContextAccessor accessor) : base(accessor)
+    private readonly IConfiguration _configuration;
+    public GetPrincipalFromExpiredTokenService(DbContext dbContext, IConfiguration configuration) : base(dbContext, null)
     {
+        _configuration = configuration;
     }
 
-    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    public override Task<bool> OnExecutingAsync()
     {
         return Task.FromResult(true);
     }
 
-    public override Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override Task OnExecuteAsync()
     {
         var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(context.Configuration.GetValue<string>("Application:Secret").xToSHA512Decrypt(ApplicationConstants.Encryption.DB_ENC_SHA512_KEY))),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetValue<string>("Application:Secret").xToSHA512Decrypt(ApplicationConstants.Encryption.DB_ENC_SHA512_KEY))),
             ValidateIssuer = false,
             ValidateAudience = false,
             RoleClaimType = ClaimTypes.Role,

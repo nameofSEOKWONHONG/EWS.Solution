@@ -11,13 +11,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Account.Users;
 
-public class GetUserService : ScopeServiceImpl<GetUserService, string, IResultBase<User>>, IGetUserService
+public class GetUserService : ServiceImplBase<GetUserService, string, IResultBase<User>>, IGetUserService
 {
-    public GetUserService(IHttpContextAccessor accessor) : base(accessor)
+    public GetUserService(DbContext dbContext, ISessionContext context) : base(dbContext, context)
     {
     }
 
-    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    public override Task<bool> OnExecutingAsync()
     {
         if (this.Request.xIsEmpty())
         {
@@ -28,10 +28,10 @@ public class GetUserService : ScopeServiceImpl<GetUserService, string, IResultBa
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override async Task OnExecuteAsync()
     {
-        var userSet = dbContext.Set<User>();
-        var user = await userSet.FirstOrDefaultAsync(m => m.TenantId == context.TenantId && m.Id == this.Request);
+        var userSet = Db.Set<User>();
+        var user = await userSet.FirstOrDefaultAsync(m => m.TenantId == Context.TenantId && m.Id == this.Request);
         this.Result = await JResult<User>.SuccessAsync(user);
     }
 }

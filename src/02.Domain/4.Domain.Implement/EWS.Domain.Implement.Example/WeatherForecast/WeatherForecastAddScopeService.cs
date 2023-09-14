@@ -10,13 +10,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Example.WeatherForecast;
 
-public class WeatherForecastAddService : ScopeServiceImpl<WeatherForecastAddService, Entity.Example.WeatherForecast, IResultBase<int>>, IWeatherForecastAddService
+public class WeatherForecastAddService : ServiceImplBase<WeatherForecastAddService, Entity.Example.WeatherForecast, IResultBase<int>>, IWeatherForecastAddService
 {
-    public WeatherForecastAddService(IHttpContextAccessor accessor) : base(accessor)
+    public WeatherForecastAddService(DbContext dbContext, ISessionContext context) : base(dbContext, context)
     {
     }
 
-    public override async Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    public override async Task<bool> OnExecutingAsync()
     {
         var validator = new Entity.Example.WeatherForecast.Validator();
         var valid = validator.Validate(this.Request);
@@ -29,9 +29,9 @@ public class WeatherForecastAddService : ScopeServiceImpl<WeatherForecastAddServ
         return true;
     }
 
-    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override async Task OnExecuteAsync()
     {
-        var result = await dbContext.CreateUpsertBuilder<Entity.Example.WeatherForecast>(context)
+        var result = await Db.CreateUpsertBuilder<Entity.Example.WeatherForecast>(Context)
             .SetQueryable(query => query.Where(m => m.Id == this.Request.Id))
             .OnAddAsync(() => Task.FromResult(this.Request))
             .ExecuteAsync();
