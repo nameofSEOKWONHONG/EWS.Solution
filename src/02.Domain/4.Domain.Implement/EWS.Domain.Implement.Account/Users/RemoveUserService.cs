@@ -11,31 +11,31 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Account.Users;
 
-public class RemoveUserService : ScopeServiceImpl<RemoveUserService, string, IResultBase>, IRemoveUserService
+public class RemoveUserService : ServiceImplBase<RemoveUserService, string, IResultBase>, IRemoveUserService
 {
-    public RemoveUserService(IHttpContextAccessor accessor) : base(accessor)
+    public RemoveUserService(DbContext dbContext, ISessionContext context) : base(dbContext, context)
     {
     }
 
-    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    public override Task<bool> OnExecutingAsync()
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override async Task OnExecuteAsync()
     {
-        var userSet = dbContext.Set<User>();
-        var user = await userSet.FirstOrDefaultAsync(m => m.TenantId == context.TenantId && m.Id == this.Request);
+        var userSet = Db.Set<User>();
+        var user = await userSet.FirstOrDefaultAsync(m => m.TenantId == Context.TenantId && m.Id == this.Request);
         if (user.IsActive.xIsTrue())
         {
             user.IsActive = !user.IsActive;
             userSet.Update(user);
-            await dbContext.SaveChangesAsync();
+            await Db.SaveChangesAsync();
         }
         else
         {
             userSet.Remove(user);
-            await dbContext.SaveChangesAsync();
+            await Db.SaveChangesAsync();
         }
         
         this.Result = await JResult.SuccessAsync();

@@ -41,7 +41,7 @@ where TService : IServiceImplBase<TRequest, TResult>
         return this;
     }
 
-    public async Task OnExecuted(Func<TResult, Task> func, Func<ValidationResult, Task> validateFunc = null)
+    public async Task OnExecuted(Action<TResult, ValidationResult> action)
     {
         var filterValid = true;
         _filters.xForEach(filter =>
@@ -59,22 +59,23 @@ where TService : IServiceImplBase<TRequest, TResult>
             parameter = _parameter.Invoke();
         }
 
+        var serviceImpl = (ServiceImplBase<TService>)_service;
         if (_validator.xIsNotEmpty())
         {
             var validationResult = await _validator.ValidateAsync(parameter);
             if (validationResult.IsValid.xIsFalse())
             {
-                if (validateFunc.xIsNotEmpty()) await validateFunc(validationResult);
+                action(default, validationResult);
                 return;
             }            
         }
         
-        var service = (ServiceImplBase<TService>)_service;
-        var isOk = await service.OnExecutingAsync();
+        var isOk = await serviceImpl.OnExecutingAsync();
         if (isOk)
         {
-            await service.OnExecuteAsync();
-            await func(((IServiceImplBase<TRequest, TResult>)service).Result);
+            await serviceImpl.OnExecuteAsync();
+            var serviceImplInterface = (IServiceImplBase<TRequest, TResult>)_service;
+            action(serviceImplInterface.Result, null);
         }
     }
 }

@@ -13,21 +13,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Account.Users;
 
-public class GetAllUsersService : ScopeServiceImpl<GetAllUsersService, GetAllUsersRequest, JPaginatedResult<UserResult>>, IGetAllUsersService
+public class GetAllUsersService : ServiceImplBase<GetAllUsersService, GetAllUsersRequest, JPaginatedResult<UserResult>>, IGetAllUsersService
 {
-    public GetAllUsersService(IHttpContextAccessor accessor) : base(accessor)
+    public GetAllUsersService(DbContext dbContext, ISessionContext context) : base(dbContext, context)
     {
     }
 
-    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    public override Task<bool> OnExecutingAsync()
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override async Task OnExecuteAsync()
     {
-        var userSet = dbContext.Set<User>();
-        var query = userSet.Where(m => m.TenantId == context.TenantId &&
+        var userSet = Db.Set<User>();
+        var query = userSet.Where(m => m.TenantId == Context.TenantId &&
                             m.UserName.Contains(this.Request.UserName) &&
                             m.Email.Contains(this.Request.Email));
         var total = await query.CountAsync();

@@ -5,7 +5,7 @@ using EWS.Infrastructure.ServiceRouter.Abstract;
 
 namespace EWS.Domain.Abstraction.Account.Identity;
 
-public interface IResetPasswordService : IServiceImplBase<ResetPasswordRequest, IResultBase>, IScopeService
+public interface ITokenRefreshService : IServiceImplBase<RefreshTokenRequest, IResultBase<TokenResponse>>, IScopeService
 {
     
 }

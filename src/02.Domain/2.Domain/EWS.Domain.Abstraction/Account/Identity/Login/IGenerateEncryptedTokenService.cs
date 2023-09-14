@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace EWS.Domain.Abstraction.Account.Identity;
 
-public interface IGenerateEncryptedToken : IServiceImplBase<IdentityGenerateEncryptedTokenRequest, string>, IScopeService
+public interface IGenerateEncryptedTokenService : IServiceImplBase<IdentityGenerateEncryptedTokenRequest, string>, IScopeService
 {
     
 }

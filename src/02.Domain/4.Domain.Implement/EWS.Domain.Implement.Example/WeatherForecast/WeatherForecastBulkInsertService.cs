@@ -9,20 +9,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Example.WeatherForecast;
 
-public class WeatherForecastBulkInsertService : ScopeServiceImpl<WeatherForecastBulkInsertService, IEnumerable<WeatherForecastBulkRequest>, IResultBase>, IWeatherForecastBulkInsertService
+public class WeatherForecastBulkInsertService : ServiceImplBase<WeatherForecastBulkInsertService, IEnumerable<WeatherForecastBulkRequest>, IResultBase>, IWeatherForecastBulkInsertService
 {
-    public WeatherForecastBulkInsertService(IHttpContextAccessor accessor) : base(accessor)
+    public WeatherForecastBulkInsertService(DbContext dbContext, ISessionContext context) : base(dbContext, context)
     {
     }
 
-    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    public override Task<bool> OnExecutingAsync()
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override async Task OnExecuteAsync()
     {
-        await dbContext.CreateSqlBulkBuilder<WeatherForecastBulkRequest>()
+        await Db.CreateSqlBulkBuilder<WeatherForecastBulkRequest>()
             .BulkInsertAsync<Entity.Example.WeatherForecast>(this.Request.ToArray());
     }
 }

@@ -10,22 +10,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Account.Users;
 
-public class UpdateUserService : ScopeServiceImpl<UpdateUserService, User, IResultBase>, IUpdateUserService 
+public class UpdateUserService : ServiceImplBase<UpdateUserService, User, IResultBase>, IUpdateUserService 
 {
-    public UpdateUserService(IHttpContextAccessor accessor) : base(accessor)
+    public UpdateUserService(DbContext dbContext, ISessionContext context) : base(dbContext, context)
     {
     }
 
-    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    public override Task<bool> OnExecutingAsync()
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override async Task OnExecuteAsync()
     {
-        var userSet = dbContext.Set<User>();
+        var userSet = Db.Set<User>();
         userSet.Update(this.Request);
-        await dbContext.SaveChangesAsync();
+        await Db.SaveChangesAsync();
         this.Result = await JResult.SuccessAsync();
     }
 }

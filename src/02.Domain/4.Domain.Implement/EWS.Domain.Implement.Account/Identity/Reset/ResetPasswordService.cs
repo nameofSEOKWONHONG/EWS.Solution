@@ -14,23 +14,23 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EWS.Domain.Implement.Account.Identity.Reset;
 
-public class ResetPasswordService : ScopeServiceImpl<ResetPasswordService, ResetPasswordRequest, IResultBase>, IResetPasswordService
+public class ResetPasswordService : ServiceImplBase<ResetPasswordService, ResetPasswordRequest, IResultBase>, IResetPasswordService
 {
     private readonly IPasswordHasher<User> _passwordHasher;
-    public ResetPasswordService(IHttpContextAccessor accessor) : base(accessor)
+    public ResetPasswordService(DbContext dbContext, ISessionContext context, IPasswordHasher<User> passwordHasher) : base(dbContext, context)
     {
-        _passwordHasher = this.Accessor.HttpContext.RequestServices.GetRequiredService<IPasswordHasher<User>>();
+        _passwordHasher = passwordHasher;
     }
 
-    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    public override Task<bool> OnExecutingAsync()
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override async Task OnExecuteAsync()
     {
-        var userSet = dbContext.Set<User>();
-        var user = await userSet.FirstOrDefaultAsync(m => m.TenantId == context.TenantId && 
+        var userSet = Db.Set<User>();
+        var user = await userSet.FirstOrDefaultAsync(m => m.TenantId == Context.TenantId && 
                                                            m.Email == this.Request.Email);
         if (user.xIsEmpty())
         {
@@ -47,7 +47,7 @@ public class ResetPasswordService : ScopeServiceImpl<ResetPasswordService, Reset
                 var hashPassword = _passwordHasher.HashPassword(user, this.Request.ConfirmPassword);
                 user.PasswordHash = hashPassword;
                 userSet.Update(user);
-                await dbContext.SaveChangesAsync();
+                await Db.SaveChangesAsync();
                 
                 this.Result = await JResult.SuccessAsync("Password Reset Successful!");
                 return;

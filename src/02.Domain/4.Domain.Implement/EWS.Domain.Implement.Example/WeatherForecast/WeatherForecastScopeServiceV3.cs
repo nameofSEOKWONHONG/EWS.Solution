@@ -1,32 +1,26 @@
-﻿using System.Transactions;
-using EWS.Domain.Abstraction.WeatherForecast;
-using EWS.Domain.Base;
+﻿using EWS.Domain.Abstraction.WeatherForecast;
 using EWS.Domain.Example;
 using EWS.Domain.Infra.QueryBuilder.NumberEntityBase;
-using EWS.Entity.Db;
 using EWS.Infrastructure.ServiceRouter.Abstract;
-using EWS.Infrastructure.ServiceRouter.Implement.Routers;
 using EWS.Infrastructure.Session.Abstract;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Example.WeatherForecast;
 
-public class WeatherForecastServiceV3: ScopeServiceImpl<WeatherForecastServiceV3, int, WeatherForecastResult>, IWeatherForecastServiceV3
+public class WeatherForecastServiceV3: ServiceImplBase<WeatherForecastServiceV3, int, WeatherForecastResult>, IWeatherForecastServiceV3
 {
-    public WeatherForecastServiceV3(IHttpContextAccessor accessor) : base(accessor)
+    public WeatherForecastServiceV3(DbContext dbContext, ISessionContext context) : base(dbContext, context)
     {
-        
     }
 
-    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    public override Task<bool> OnExecutingAsync()
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override async Task OnExecuteAsync()
     {
-        this.Result = await dbContext.CreateSelectBuilder<Entity.Example.WeatherForecast>(context)
+        this.Result = await Db.CreateSelectBuilder<Entity.Example.WeatherForecast>(Context)
             .SetQueryable(query =>
             {
                 if (this.Request > 0)

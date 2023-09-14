@@ -1,13 +1,11 @@
-﻿using System.Transactions;
-using EWS.Domain.Abstraction.Common;
+﻿using EWS.Domain.Abstraction.Common;
 using EWS.Domain.Abstraction.WeatherForecast;
 using EWS.Domain.Common.Enums;
 using EWS.Domain.Example;
 using EWS.Domain.Infra.Abstract;
 using EWS.Domain.Infra.Redis;
-using EWS.Domain.Infra.Service;
+using EWS.Domain.Infrastructure;
 using EWS.Entity.Db;
-using EWS.Infrastructure.ServiceRouter.Implement.Routers;
 using EWS.Infrastructure.Session.Abstract;
 using eXtensionSharp;
 using Microsoft.Extensions.Configuration;
@@ -33,18 +31,15 @@ public class WeatherForecastSubscriberWorkerImpl : RedisSubscriberWorkerImplBase
         var hostNotificationService = scope.ServiceProvider.GetRequiredService<IHostNotificationService>();
 
         WeatherForecastResult result = null;
-        using (var sr = AppServiceRouter.Create(dbContext, SessionContext, TransactionScopeOption.Suppress))
-        {
-            var req = this.RedisWorkerProtocol.Request.xToEntity<WeatherForecastResult>();
-            Log.Logger.Debug("Debug:{REQ}", req);
-            sr.Register<IWeatherForecastServiceV3, int, WeatherForecastResult>(service)
-                .AddFilter(() => this.RedisWorkerProtocol.xIsNotEmpty())
-                .SetParameter(() => req.Id)
-                .Executed(res => result = res);
-
-            await sr.ExecuteAsync();
-        }
-
+        
+        var req = this.RedisWorkerProtocol.Request.xToEntity<WeatherForecastResult>();
+        Log.Logger.Debug("Debug:{REQ}", req);
+        
+        await ServiceLoader<IWeatherForecastServiceV3, int, WeatherForecastResult>.Create(service)
+            .AddFilter(() => this.RedisWorkerProtocol.xIsNotEmpty())
+            .SetParameter(() => req.Id)
+            .OnExecuted((res, v) => result = res);
+        
         await Task.Delay(10 * 1000);
         await hostNotificationService.NotificationAsync();
         

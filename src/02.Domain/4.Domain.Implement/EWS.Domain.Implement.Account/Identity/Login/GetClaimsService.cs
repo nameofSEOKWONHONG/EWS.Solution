@@ -14,24 +14,24 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Account.Identity;
 
-public class GetClaimsService : ScopeServiceImpl<GetClaimsService, User, IEnumerable<Claim>>, IGetClaimsService
+public class GetClaimsService : ServiceImplBase<GetClaimsService, User, IEnumerable<Claim>>, IGetClaimsService
 {
-    public GetClaimsService(IHttpContextAccessor accessor) : base(accessor)
+    public GetClaimsService(DbContext dbContext) : base(dbContext, null)
     {
+        
     }
-
-    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    public override Task<bool> OnExecutingAsync()
     {
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override async Task OnExecuteAsync()
     {
-        var tenantDb = dbContext.Set<Tenant>();
-        var userDb = dbContext.Set<User>();
-        var userRoleDb = dbContext.Set<UserRole>();
-        var roleDb = dbContext.Set<Role>();
-        var roleClaimDb = dbContext.Set<RoleClaim>();
+        var tenantDb = Db.Set<Tenant>();
+        var userDb = Db.Set<User>();
+        var userRoleDb = Db.Set<UserRole>();
+        var roleDb = Db.Set<Role>();
+        var roleClaimDb = Db.Set<RoleClaim>();
         
         var userClaims = new List<Claim>();
         var tenant = await tenantDb.FirstOrDefaultAsync(m => m.Id == this.Request.TenantId);

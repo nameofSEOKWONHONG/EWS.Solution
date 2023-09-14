@@ -1,35 +1,35 @@
-using System.Transactions;
 using EWS.Domain.Abstraction.WeatherForecast;
 using EWS.Domain.Base;
 using EWS.Domain.Common.Enums;
 using EWS.Domain.Example;
 using EWS.Domain.Infra.QueryBuilder.NumberEntityBase;
-using EWS.Entity.Db;
+using EWS.Domain.Infrastructure;
 using EWS.Infrastructure.ServiceRouter.Abstract;
-using EWS.Infrastructure.ServiceRouter.Implement.Routers;
 using EWS.Infrastructure.Session.Abstract;
 using eXtensionSharp;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Example.WeatherForecast;
 
-public class WeatherForecastGetAllService : ScopeServiceImpl<WeatherForecastGetAllService, WeatherForecatGetAllRequest, JPaginatedResult<WeatherForecastResult>>, IWeatherForecastGetAllService
+public class WeatherForecastGetAllService : ServiceImplBase<WeatherForecastGetAllService, WeatherForecatGetAllRequest, JPaginatedResult<WeatherForecastResult>>, IWeatherForecastGetAllService
 {
-    public WeatherForecastGetAllService(IHttpContextAccessor accessor) : base(accessor)
+    private readonly IWeatherForecastGetService _weatherForecastGetService;
+    public WeatherForecastGetAllService(DbContext dbContext, ISessionContext context,
+        IWeatherForecastGetService weatherForecastGetService) : base(dbContext, context)
     {
-        
+        _weatherForecastGetService = weatherForecastGetService;
     }
+    
 
-    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    public override Task<bool> OnExecutingAsync()
     {
         
         return Task.FromResult(true);
     }
 
-    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override async Task OnExecuteAsync()
     {
-        this.Result = await dbContext.CreateSelectBuilder<Entity.Example.WeatherForecast>(context)
+        this.Result = await Db.CreateSelectBuilder<Entity.Example.WeatherForecast>(Context)
             .SetRequest(this.Request)
             .SetQueryable(query => query)
             .ToPaginationAsync<WeatherForecastResult>(res =>
@@ -51,16 +51,13 @@ public class WeatherForecastGetAllService : ScopeServiceImpl<WeatherForecastGetA
             });
         
         WeatherForecastResult result = null;
-        using var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor);
-        var now = DateTime.Now;
-        sr.Register<IWeatherForecastGetService, int, WeatherForecastResult>()
+        await ServiceLoader<IWeatherForecastGetService, int, WeatherForecastResult>
+            .Create(_weatherForecastGetService)
             .AddFilter(() => true)
             .SetParameter(() => this.Result.Data.First().Id)
-            .Executed(res =>
+            .OnExecuted((res, v) =>
             {
                 result = res;
             });
-
-        await sr.ExecuteAsync();
     }
 }

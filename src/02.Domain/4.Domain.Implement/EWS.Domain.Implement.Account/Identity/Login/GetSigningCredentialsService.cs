@@ -12,20 +12,20 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace EWS.Domain.Implement.Account.Identity;
 
-public class GetSigningCredentialsService : ScopeServiceImpl<GetSigningCredentialsService, bool, SigningCredentials>, IGetSigningCredentialsService
+public class GetSigningCredentialsService : ServiceImplBase<GetSigningCredentialsService, bool, SigningCredentials>, IGetSigningCredentialsService
 {
     private readonly IConfiguration _configuration;
-    public GetSigningCredentialsService(IHttpContextAccessor accessor) : base(accessor)
+    public GetSigningCredentialsService(DbContext dbContext, IConfiguration configuration) : base(dbContext, null)
     {
-        _configuration = this.Accessor.HttpContext!.RequestServices.GetRequiredService<IConfiguration>();
+        _configuration = configuration;
     }
 
-    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    public override Task<bool> OnExecutingAsync()
     {
         return Task.FromResult(true);
     }
 
-    public override Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override Task OnExecuteAsync()
     {
         var secret = Encoding.UTF8.GetBytes(_configuration.GetValue<string>("Application:Secret").xToSHA512Decrypt(ApplicationConstants.Encryption.DB_ENC_SHA512_KEY));
         this.Result = new SigningCredentials(new SymmetricSecurityKey(secret), SecurityAlgorithms.HmacSha256);
