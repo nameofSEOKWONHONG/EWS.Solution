@@ -5,23 +5,29 @@ using FluentValidation.Results;
 
 namespace EWS.Domain.Infrastructure;
 
-public class ServiceLoader<TService, TRequest, TResult>
+public static class ServiceLoaderExtensions {
+    public static ServiceLoader<TService, TRequest, TResult> Create<TService, TRequest, TResult>(this IServiceImplBase<TRequest, TResult> service)
+        where TService : IServiceImplBase<TRequest, TResult>
+    {
+        return new ServiceLoader<TService, TRequest, TResult>(service);
+    }
+}
+
+
+public sealed class ServiceLoader<TService, TRequest, TResult>
 where TService : IServiceImplBase<TRequest, TResult>
 {
     private IServiceImplBase<TRequest, TResult> _service;
-    private ServiceLoader(IServiceImplBase<TRequest, TResult> service)
+    internal ServiceLoader(IServiceImplBase<TRequest, TResult> service)
     {
         _service = service;
     }
 
-    public static ServiceLoader<TService, TRequest, TResult> Create(IServiceImplBase<TRequest, TResult> service)
-    {
-        return new ServiceLoader<TService, TRequest, TResult>(service);
-    }
-
     private List<Func<bool>> _filters = new List<Func<bool>>();
     private Func<TRequest> _parameter;
-    private JValidatorBase<TRequest> _validator; 
+    private JValidatorBase<TRequest> _validator;
+    private Func<ValidationResult, Task> _validateResultFunc;
+    private Func<TResult, Task> _resultFunc;
 
     public ServiceLoader<TService, TRequest, TResult> AddFilter(Func<bool> filter)
     {
@@ -41,14 +47,19 @@ where TService : IServiceImplBase<TRequest, TResult>
         return this;
     }
 
-    public async Task OnExecuted(Func<TResult, Task> func, Func<ValidationResult, Task> validateFunc = null)
+    public ServiceLoader<TService, TRequest, TResult> OnValidated(Func<ValidationResult, Task> validationResultFunc)
     {
+        _validateResultFunc = validationResultFunc;
+        return this;
+    }
+
+    public async Task OnExecuted(Func<TResult, Task> resultAction = null)
+    {   
         var filterValid = true;
-        _filters.xForEach(filter =>
+        _filters.ForEach(filter =>
         {
             filterValid = filter.Invoke();
-            if (filterValid.xIsFalse()) return false;
-            return true;
+            if (filterValid.xIsFalse()) return;
         });
 
         if (filterValid.xIsFalse()) return;
@@ -57,6 +68,7 @@ where TService : IServiceImplBase<TRequest, TResult>
         if (_parameter.xIsNotEmpty())
         {
             parameter = _parameter.Invoke();
+            _service.Request = parameter;
         }
 
         if (_validator.xIsNotEmpty())
@@ -64,17 +76,23 @@ where TService : IServiceImplBase<TRequest, TResult>
             var validationResult = await _validator.ValidateAsync(parameter);
             if (validationResult.IsValid.xIsFalse())
             {
-                if (validateFunc.xIsNotEmpty()) await validateFunc(validationResult);
-                return;
+                if (_validateResultFunc.xIsNotEmpty())
+                {
+                    await _validateResultFunc(validationResult);
+                    return;
+                }
             }            
         }
         
-        var service = (ServiceImplBase<TService>)_service;
+        var service = (IServiceImplBase<TRequest, TResult>)_service;
         var isOk = await service.OnExecutingAsync();
         if (isOk)
         {
             await service.OnExecuteAsync();
-            await func(((IServiceImplBase<TRequest, TResult>)service).Result);
+            if (resultAction.xIsNotEmpty())
+            {
+                await resultAction(service.Result);    
+            }
         }
     }
 }
