@@ -27,7 +27,7 @@ public class GetAllUsersService : ServiceImplBase<GetAllUsersService, GetAllUser
     public override async Task OnExecuteAsync()
     {
         var userSet = Db.Set<User>();
-        var query = userSet.Where(m => m.TenantId == Context.TenantId &&
+        var query = userSet.AsNoTracking().Where(m => m.TenantId == Context.TenantId &&
                             m.UserName.Contains(this.Request.UserName) &&
                             m.Email.Contains(this.Request.Email));
         var total = await query.CountAsync();

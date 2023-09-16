@@ -1,25 +1,23 @@
-using System.Transactions;
 using EWS.Application.Wrapper;
 using EWS.Domain.Abstraction.WeatherForecast;
 using EWS.Domain.Base;
 using EWS.Domain.Example;
 using EWS.Domain.Implement.Example.BackgroundJob.Abstract;
-using EWS.Entity.Db;
 using EWS.Domain.Infra;
+using EWS.Domain.Infrastructure;
+using EWS.Entity.Db;
 using EWS.Entity.Example;
 using EWS.Infrastructure.Extentions;
-using EWS.Infrastructure.ServiceRouter.Implement.Routers;
 using eXtensionSharp;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
-using IsolationLevel = System.Data.IsolationLevel;
 
 namespace EWS.WebApi.Server.Controllers;
 
 /// <summary>
 /// 
 /// </summary>
-public class WeatherForecastController : JControllerBase
+public class WeatherForecastController : JUnverifiedControllerBase<EWSMsDbContext>
 {
     private readonly IBackgroundJobClient _client;
     /// <summary>
@@ -27,9 +25,9 @@ public class WeatherForecastController : JControllerBase
     /// </summary>
     /// <param name="accessor"></param>
     /// <param name="client"></param>
-    public WeatherForecastController(IHttpContextAccessor accessor, IBackgroundJobClient client) : base(accessor)
+    public WeatherForecastController() : base()
     {
-        _client = client;
+        
     }
 
     /// <summary>
@@ -38,22 +36,19 @@ public class WeatherForecastController : JControllerBase
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet("getall")]
-    public async Task<JPaginatedResult<WeatherForecastResult>> GetAll([FromQuery]WeatherForecatGetAllRequest request)
-    {
-        using var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor);
-
+    public async Task<JPaginatedResult<WeatherForecastResult>> GetAll([FromServices]IWeatherForecastGetAllService service,
+        [FromServices]IBackgroundJobClient backgroundJobClient,
+        [FromQuery]WeatherForecatGetAllRequest request)
+    {   
         JPaginatedResult<WeatherForecastResult> result = null;
-        sr.Register<IWeatherForecastGetAllService, WeatherForecatGetAllRequest, JPaginatedResult<WeatherForecastResult>>()
-            .AddFilter(() => true)
+        await service
+            .Create<IWeatherForecastGetAllService, WeatherForecatGetAllRequest,
+                JPaginatedResult<WeatherForecastResult>>()
+            .AddFilter(request.xIsNotEmpty)
             .SetParameter(() => request)
-            .Executed(res =>
-            {
-                result = res;
-            });
-
-        await sr.ExecuteAsync();
+            .OnExecuted(v => result = result);
         
-        _client.Enqueue<IMyBackgroundJob>(job => job.Run());
+        backgroundJobClient.Enqueue<IMyBackgroundJob>(job => job.Run());
         
         return result;
     }
@@ -64,21 +59,15 @@ public class WeatherForecastController : JControllerBase
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpGet(Name = "get")]
-    public async Task<WeatherForecastResult> Get(int id)
+    public async Task<WeatherForecastResult> Get([FromServices]IWeatherForecastGetService service,
+        int id)
     {   
         WeatherForecastResult result = null;
-        using var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor);
-        var now = DateTime.Now;
-        sr.Register<IWeatherForecastGetService, int, WeatherForecastResult>()
-            .AddFilter(() => true)
+        await service.Create<IWeatherForecastGetService, int, WeatherForecastResult>()
+            .AddFilter(() => id.xIsNotEmptyNum())
             .SetParameter(() => id)
-            .Executed(res =>
-            {
-                result = res;
-            });
-
-        await sr.ExecuteAsync();
-
+            .OnExecuted(r => result = r);
+        
         return result;
     }
     
@@ -88,18 +77,16 @@ public class WeatherForecastController : JControllerBase
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPost(Name = "add")]
-    public async Task<IActionResult> Add(WeatherForecast request)
+    public async Task<IActionResult> Add([FromServices]IWeatherForecastAddService service,
+        WeatherForecast request)
     {
         IResultBase<int> result = null;
-        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor))
-        {
-            sr.Register<IWeatherForecastAddService, WeatherForecast, IResultBase<int>>()
-                .AddFilter(() => request.Id <= 0)
-                .SetParameter(() => request)
-                .Executed((res) => result = res);
-            await sr.ExecuteAsync();
-        }
-
+        await service.Create<IWeatherForecastAddService, WeatherForecast, IResultBase<int>>()
+            .UseTransaction(this.Db)
+            .AddFilter(() => request.Id.xIsNotEmptyNum())
+            .SetParameter(() => request)
+            .OnExecuted((res) => result = res);
+        
         return Ok(result);
     }
 
@@ -128,20 +115,16 @@ public class WeatherForecastController : JControllerBase
     /// <param name="connectionId"></param>
     /// <returns></returns>
     [HttpGet("callworker")]
-    public async Task<IActionResult> CallWorker(string connectionId)
+    public async Task<IActionResult> CallWorker([FromServices]IWeatherForecastServiceV2 service, string connectionId)
     {
         var result = new List<WeatherForecastResult>();
-        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor))
-        {
-            sr.Register<IWeatherForecastServiceV2, string, WeatherForecastResult>()
-                .AddFilter(() => connectionId.xIsNotEmpty())
-                .SetParameter(() => connectionId)
-                .Executed(res =>
-                {
-                    result.Add(res);
-                });
-            await sr.ExecuteAsync();
-        }
+        await service.Create<IWeatherForecastServiceV2, string, WeatherForecastResult>()
+            .AddFilter(() => connectionId.xIsNotEmpty())
+            .SetParameter(() => connectionId)
+            .OnExecuted(res =>
+            {
+                result.Add(res);
+            });
 
         return Ok(await JResult<List<WeatherForecastResult>>.SuccessAsync(result));
     }
@@ -151,7 +134,7 @@ public class WeatherForecastController : JControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpPost("bulk")]
-    public async Task<IActionResult> Bulk()
+    public async Task<IActionResult> Bulk([FromServices]IWeatherForecastBulkInsertService service)
     {
         var cities = new[]
         {
@@ -177,15 +160,12 @@ public class WeatherForecastController : JControllerBase
             });
         });
         
-        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor))
-        {
-            sr.Register<IWeatherForecastBulkInsertService, IEnumerable<WeatherForecastBulkRequest>, IResultBase>()
-                .AddFilter(() => list.Count > 0)
-                .SetParameter(() => list)
-                .Executed((res) => result = res);
-            await sr.ExecuteAsync();
-        }
-
+        await service.Create<IWeatherForecastBulkInsertService, IEnumerable<WeatherForecastBulkRequest>, IResultBase>()
+            .UseTransaction(this.Db)
+            .AddFilter(() => list.Count.xIsNotEmptyNum())
+            .SetParameter(() => list)
+            .OnExecuted((res) => result = res);
+        
         return Ok(result);
     }
 }

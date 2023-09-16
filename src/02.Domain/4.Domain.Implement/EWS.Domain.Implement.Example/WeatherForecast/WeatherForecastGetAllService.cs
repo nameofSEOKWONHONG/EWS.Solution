@@ -51,11 +51,10 @@ public class WeatherForecastGetAllService : ServiceImplBase<WeatherForecastGetAl
             });
         
         WeatherForecastResult result = null;
-        await ServiceLoader<IWeatherForecastGetService, int, WeatherForecastResult>
-            .Create(_weatherForecastGetService)
+        await _weatherForecastGetService.Create<IWeatherForecastGetService, int, WeatherForecastResult>()
             .AddFilter(() => true)
             .SetParameter(() => this.Result.Data.First().Id)
-            .OnExecuted((res, v) =>
+            .OnExecuted((res) =>
             {
                 result = res;
             });

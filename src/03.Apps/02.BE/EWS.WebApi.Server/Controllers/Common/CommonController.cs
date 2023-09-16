@@ -12,7 +12,7 @@ public class CommonController : JSessionControllerBase
     /// 
     /// </summary>
     /// <param name="accessor"></param>
-    public CommonController(IHttpContextAccessor accessor) : base(accessor)
+    public CommonController() : base()
     {
     }
 }

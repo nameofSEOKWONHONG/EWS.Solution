@@ -7,11 +7,13 @@ using EWS.Domain.Infra.Kafka.Abstract;
 using EWS.Domain.Infra.Mongodb;
 using EWS.Domain.Infra.Redis;
 using EWS.Domain.Infra.Service;
+using EWS.Entity.Db;
 using EWS.WebApi.Server;
 using EWS.WebApi.Server.ApplicationInitializer;
 using EWS.WebApi.Server.ApplicationInitializer.Tenant;
 using EWS.WebApi.Server.Setup.ProgramSetups;
 using eXtensionSharp;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 

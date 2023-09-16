@@ -48,14 +48,14 @@ public class TokenRefreshService : ServiceImplBase<TokenRefreshService, RefreshT
         }
 
         ClaimsPrincipal userPrincipal = null;
-        await ServiceLoader<IGetPrincipalFromExpiredTokenService, string, ClaimsPrincipal>.Create(_getPrincipalFromExpiredTokenService)
+        await _getPrincipalFromExpiredTokenService.Create<IGetPrincipalFromExpiredTokenService, string, ClaimsPrincipal>()
             .AddFilter(() => this.Request.xIsNotEmpty())
             .AddFilter(() => this.Request.Token.xIsNotEmpty())
             .SetParameter(() => this.Request.Token)
-            .OnExecuted((res, v) => userPrincipal = res);
+            .OnExecuted((res) => userPrincipal = res);
         
         var userEmail = userPrincipal.FindFirstValue(ClaimTypes.Email);
-        var user = await users.FirstOrDefaultAsync(m => m.TenantId == this.Request.TenantId && m.Email == userEmail);
+        var user = await users.AsNoTracking().FirstOrDefaultAsync(m => m.TenantId == this.Request.TenantId && m.Email == userEmail);
 
         if (user.xIsEmpty())
         {
@@ -72,29 +72,29 @@ public class TokenRefreshService : ServiceImplBase<TokenRefreshService, RefreshT
         string token = string.Empty;
         SigningCredentials signingCredentials = null;
         IEnumerable<Claim> claims = null;        
-        await ServiceLoader<IGetSigningCredentialsService, bool, SigningCredentials>.Create(_getSigningCredentialsService)
+        await _getSigningCredentialsService.Create<IGetSigningCredentialsService, bool, SigningCredentials>()
             .AddFilter(() => true)
             .SetParameter(() => true)
-            .OnExecuted((res, v) => signingCredentials = res);
+            .OnExecuted((res) => signingCredentials = res);
         
-        await ServiceLoader<IGetClaimsService, User, IEnumerable<Claim>>.Create(_getClaimsService)
+        await _getClaimsService.Create<IGetClaimsService, User, IEnumerable<Claim>>()
             .AddFilter(() => user.xIsNotEmpty())
             .SetParameter(() => user)
-            .OnExecuted((res, v) => claims = res);
+            .OnExecuted((res) => claims = res);
         
-        await ServiceLoader<IGenerateEncryptedTokenService, IdentityGenerateEncryptedTokenRequest, string>.Create(_generateEncryptedTokenService)
+        await _generateEncryptedTokenService.Create<IGenerateEncryptedTokenService, IdentityGenerateEncryptedTokenRequest, string>()
             .AddFilter(() => claims.xIsNotEmpty())
             .SetParameter(() => new IdentityGenerateEncryptedTokenRequest()
             {
                 SigningCredentials = signingCredentials,
                 Claims = claims
             })
-            .OnExecuted((res, v) => token = res);
+            .OnExecuted((res) => token = res);
         
-        await ServiceLoader<IGetRefreshTokenService, User, string>.Create(_getRefreshTokenService)
+        await _getRefreshTokenService.Create<IGetRefreshTokenService, User, string>()
             .AddFilter(() => user.xIsNotEmpty())
             .SetParameter(() => user)
-            .OnExecuted((res, v) => user.RefreshToken = res);
+            .OnExecuted((res) => user.RefreshToken = res);
 
         if (token.xIsNotEmpty())
         {

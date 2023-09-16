@@ -1,11 +1,9 @@
-﻿using System.Transactions;
-using EWS.Domain.Abstraction.Users;
+﻿using EWS.Domain.Abstraction.Users;
 using EWS.Domain.Account;
 using EWS.Domain.Account.Users;
 using EWS.Domain.Base;
 using EWS.Domain.Infra;
-using EWS.Entity.Db;
-using EWS.Infrastructure.ServiceRouter.Implement.Routers;
+using EWS.Domain.Infrastructure;
 using eXtensionSharp;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,7 +18,7 @@ public class UserController : JSessionControllerBase
     /// 
     /// </summary>
     /// <param name="accessor"></param>
-    public UserController(IHttpContextAccessor accessor) : base(accessor)
+    public UserController() : base()
     {
     }
 
@@ -30,16 +28,17 @@ public class UserController : JSessionControllerBase
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet("getall")]
-    public async Task<IActionResult> GetAll([FromQuery]GetAllUsersRequest request)
+    public async Task<IActionResult> GetAll([FromServices]IGetAllUsersService service,
+        [FromQuery]GetAllUsersRequest request)
     {
         JPaginatedResult<UserResult> result = null;
-        
-        using var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor);
-        sr.Register<IGetAllUsersService, GetAllUsersRequest, JPaginatedResult<UserResult>>()
-            .AddFilter(() => request.xIsNotEmpty())
+        await service.Create<IGetAllUsersService, GetAllUsersRequest, JPaginatedResult<UserResult>>()
+            .AddFilter(request.xIsNotEmpty)
             .SetParameter(() => request)
-            .Executed(res => result = res);
-        await sr.ExecuteAsync();
+            .SetValidator(new GetAllUsersRequest.Validator(Localizer))
+            .OnValidated(v =>
+                result = JPaginatedResult<UserResult>.Failure(v.Errors.Select(m => m.ErrorMessage).ToList()))
+            .OnExecuted(r => result = r);
         
         return Ok(result);
     }

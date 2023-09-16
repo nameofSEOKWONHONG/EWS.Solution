@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Infra;
 
@@ -7,7 +8,15 @@ namespace EWS.Domain.Infra;
 /// </summary>
 public abstract class JUnverifiedControllerBase : JControllerBase
 {
-    protected JUnverifiedControllerBase(IHttpContextAccessor accessor) : base(accessor)
+    protected JUnverifiedControllerBase() : base()
+    {
+    }
+}
+
+public abstract class JUnverifiedControllerBase<TDbContext> : JControllerBase<TDbContext>
+    where TDbContext : DbContext
+{
+    protected JUnverifiedControllerBase() : base()
     {
     }
 }
