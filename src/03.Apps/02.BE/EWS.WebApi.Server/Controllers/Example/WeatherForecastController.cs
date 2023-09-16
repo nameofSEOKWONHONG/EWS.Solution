@@ -11,6 +11,7 @@ using EWS.Infrastructure.Extentions;
 using eXtensionSharp;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace EWS.WebApi.Server.Controllers;
 
@@ -38,15 +39,24 @@ public class WeatherForecastController : JUnverifiedControllerBase<EWSMsDbContex
     [HttpGet("getall")]
     public async Task<JPaginatedResult<WeatherForecastResult>> GetAll([FromServices]IWeatherForecastGetAllService service,
         [FromServices]IBackgroundJobClient backgroundJobClient,
+        [FromServices]IDistributedCache cache, 
         [FromQuery]WeatherForecatGetAllRequest request)
-    {   
+    {
         JPaginatedResult<WeatherForecastResult> result = null;
+
         await service
             .Create<IWeatherForecastGetAllService, WeatherForecatGetAllRequest,
                 JPaginatedResult<WeatherForecastResult>>()
             .AddFilter(request.xIsNotEmpty)
             .SetParameter(() => request)
-            .OnExecuted(v => result = result);
+            .SetOutputCache(cache, request.xToJson().xGetHashCode(), new DistributedCacheEntryOptions()
+            {
+                //재갱신 시간
+                SlidingExpiration = TimeSpan.FromSeconds(30),
+                //강제 삭제 시간
+                AbsoluteExpiration = DateTimeOffset.FromUnixTimeSeconds(60),
+            })
+            .OnExecuted(r => result = r);
         
         backgroundJobClient.Enqueue<IMyBackgroundJob>(job => job.Run());
         
@@ -60,12 +70,20 @@ public class WeatherForecastController : JUnverifiedControllerBase<EWSMsDbContex
     /// <returns></returns>
     [HttpGet(Name = "get")]
     public async Task<WeatherForecastResult> Get([FromServices]IWeatherForecastGetService service,
+        [FromServices]IDistributedCache cache,
         int id)
     {   
         WeatherForecastResult result = null;
         await service.Create<IWeatherForecastGetService, int, WeatherForecastResult>()
             .AddFilter(() => id.xIsNotEmptyNum())
             .SetParameter(() => id)
+            .SetOutputCache(cache, id.ToString(), new DistributedCacheEntryOptions()
+            {
+                //재갱신 시간
+                SlidingExpiration = TimeSpan.FromSeconds(30),
+                //강제 삭제 시간
+                AbsoluteExpiration = DateTimeOffset.FromUnixTimeSeconds(60),
+            })
             .OnExecuted(r => result = r);
         
         return result;
