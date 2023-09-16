@@ -5,6 +5,7 @@ using eXtensionSharp;
 using FluentValidation.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Caching.Distributed;
 using Serilog;
 using IsolationLevel = System.Data.IsolationLevel;
 
@@ -19,25 +20,44 @@ public static class ServiceLoaderExtensions {
     }
 }
 
-
 public sealed class ServiceLoader<TService, TRequest, TResult>
 where TService : IServiceImplBase<TRequest, TResult>
 {
-    private IServiceImplBase<TRequest, TResult> _service;
+    private readonly IServiceImplBase<TRequest, TResult> _service;
     internal ServiceLoader(IServiceImplBase<TRequest, TResult> service)
     {
         _service = service;
     }
 
+    #region [action behavior's]
+
     private List<Func<bool>> _filters = new List<Func<bool>>();
     private Func<TRequest> _parameter;
     private JValidatorBase<TRequest> _validator;
     private Action<ValidationResult> _validateBehavior;
-    private Func<TResult, Task> _resultFunc;
+    private Func<TResult, Task> _resultFunc;    
+
+    #endregion
+
+    #region [database transaction]
+    
+    private DbContext _db;
     private bool _useTransaction;
     private TransactionScopeOption _transactionScopeOption;
     private IsolationLevel _isolationLevel;
-    private DbContext _db;
+    
+    #endregion
+
+    #region [cache]
+
+    private IDistributedCache _cache;
+    private string _cacheKey;
+    private DistributedCacheEntryOptions _cacheEntryOptions;    
+
+    #endregion
+
+    
+
 
     public ServiceLoader<TService, TRequest, TResult> UseTransaction<TDbContext>(TDbContext db, 
         IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted)
@@ -73,6 +93,21 @@ where TService : IServiceImplBase<TRequest, TResult>
         return this;
     }
 
+    public ServiceLoader<TService, TRequest, TResult> SetOutputCache(IDistributedCache cache, string key, DistributedCacheEntryOptions options = null)
+    {
+        if (cache.xIsEmpty()) throw new Exception("Cache is empty.");
+        if (key.xIsEmpty()) throw new Exception("Cache key is empty.");
+        
+        _cache = cache;
+        _cacheKey = key;
+        _cacheEntryOptions = options;
+        if (_cacheEntryOptions.xIsEmpty()) _cacheEntryOptions = new DistributedCacheEntryOptions();
+
+        _cacheKey = $"{_cacheKey}|{typeof(TService).Name}";
+        
+        return this;
+    }
+
     public async Task OnExecuted(Action<TResult> resultAction = null)
     {
         if (_useTransaction.xIsTrue())
@@ -100,6 +135,7 @@ where TService : IServiceImplBase<TRequest, TResult>
             await ExecutedCore(resultAction);
         }
     }
+    
 
     private async Task ExecutedCore(Action<TResult> resultBehavior = null)
     {
@@ -129,17 +165,39 @@ where TService : IServiceImplBase<TRequest, TResult>
                     _validateBehavior(validationResult);
                     return;
                 }
-            }            
+            }
+        }
+
+        if (_cache.xIsNotEmpty())
+        {
+            var bytes = await _cache.GetAsync(_cacheKey.xGetHashCode());
+            if (bytes.xIsNotEmpty())
+            {
+                var exist = bytes.xToString().xToEntity<TResult>();
+                if (exist.xIsNotEmpty())
+                {
+                    _service.Result = exist;
+                    return;
+                }
+            }    
         }
         
-        var service = (IServiceImplBase<TRequest, TResult>)_service;
-        var isOk = await service.OnExecutingAsync();
+        
+        var isOk = await _service.OnExecutingAsync();
         if (isOk)
         {
-            await service.OnExecuteAsync();
+            await _service.OnExecuteAsync();
             if (resultBehavior.xIsNotEmpty())
             {
-                resultBehavior(service.Result);    
+                resultBehavior(_service.Result);
+
+                if (_cache.xIsNotEmpty())
+                {
+                    if (_service.Result.xIsNotEmpty())
+                    {
+                        await _cache.SetAsync(_cacheKey.xGetHashCode(), _service.Result.xToBytes(), _cacheEntryOptions);
+                    }    
+                }
             }
         }
     }

@@ -11,7 +11,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Example.WeatherForecast;
 
-public class WeatherForecastGetAllService : ServiceImplBase<WeatherForecastGetAllService, WeatherForecatGetAllRequest, JPaginatedResult<WeatherForecastResult>>, IWeatherForecastGetAllService
+public class WeatherForecastGetAllService : ServiceImplBase<WeatherForecastGetAllService, WeatherForecatGetAllRequest, JPaginatedResult<WeatherForecastResult>>, 
+    IWeatherForecastGetAllService
 {
     private readonly IWeatherForecastGetService _weatherForecastGetService;
     public WeatherForecastGetAllService(DbContext dbContext, ISessionContext context,
