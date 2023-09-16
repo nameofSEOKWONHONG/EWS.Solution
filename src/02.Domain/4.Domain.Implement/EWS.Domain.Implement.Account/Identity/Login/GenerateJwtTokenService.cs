@@ -35,16 +35,16 @@ public class GenerateJwtTokenService: ServiceImplBase<GenerateJwtTokenService, U
     {   
         SigningCredentials signingCredentials = null;
         IEnumerable<Claim> claims = null;
-        await ServiceLoader<IGetClaimsService, User, IEnumerable<Claim>>.Create(_getClaimsService)
+        await _getClaimsService.Create<IGetClaimsService, User, IEnumerable<Claim>>()
             .AddFilter(() => this.Request.xIsNotEmpty())
             .SetParameter(() => this.Request)
-            .OnExecuted((res, v) => claims = res);
+            .OnExecuted((res) => claims = res);
         
-        await ServiceLoader<IGetSigningCredentialsService, bool, SigningCredentials>.Create(_getSigningCredentialsService)
+        await _getSigningCredentialsService.Create<IGetSigningCredentialsService, bool, SigningCredentials>()
             .AddFilter(() => claims.xIsNotEmpty())
-            .OnExecuted((res, v) => signingCredentials = res);
+            .OnExecuted((res) => signingCredentials = res);
         
-        await ServiceLoader<IGenerateEncryptedTokenService, IdentityGenerateEncryptedTokenRequest, string>.Create(_generateEncryptedTokenService)
+        await _generateEncryptedTokenService.Create<IGenerateEncryptedTokenService, IdentityGenerateEncryptedTokenRequest, string>()
             .AddFilter(() => claims.xIsNotEmpty())
             .AddFilter(() => signingCredentials.xIsNotEmpty())
             .SetParameter(() => new IdentityGenerateEncryptedTokenRequest()
@@ -52,7 +52,7 @@ public class GenerateJwtTokenService: ServiceImplBase<GenerateJwtTokenService, U
                 SigningCredentials = signingCredentials,
                 Claims = claims
             })
-            .OnExecuted((res, v) =>
+            .OnExecuted((res) =>
             {
                 this.Result = res;
             });

@@ -11,7 +11,7 @@ public class AccountController : JSessionControllerBase
     /// 
     /// </summary>
     /// <param name="accessor"></param>
-    public AccountController(IHttpContextAccessor accessor) : base(accessor)
+    public AccountController() : base()
     {
     }
 }

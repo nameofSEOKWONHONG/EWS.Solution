@@ -64,4 +64,18 @@ public abstract class JValidatorBase<T> : AbstractValidator<T>
             .LessThan(limit)
             .WithMessage(this._localizer["LBL00050"].xValue<string>("test"));
     }
+
+    protected void Must(Expression<Func<T, string>> expression, string expected)
+    {
+        RuleFor(expression)
+            .Must(m => m.Contains(expected))
+            .WithMessage(this._localizer[""].xValue<string>($"{expected} 가 포함되어 있지 않습니다."));
+    }
+
+    protected void Email(Expression<Func<T, string>> expression)
+    {
+        RuleFor(expression)
+            .EmailAddress()
+            .WithMessage(this._localizer[""].xValue<string>("올바른 이메일 주소 형식이 아닙니다."));
+    }
 }

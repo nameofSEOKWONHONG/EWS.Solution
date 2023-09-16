@@ -1,10 +1,11 @@
-﻿using System.Transactions;
+﻿using EWS.Application.Language;
 using EWS.Application.Wrapper;
 using EWS.Domain.Abstraction.Account.Identity;
+using EWS.Domain.Base;
 using EWS.Domain.Identity;
 using EWS.Domain.Infra;
+using EWS.Domain.Infrastructure;
 using EWS.Entity.Db;
-using EWS.Infrastructure.ServiceRouter.Implement.Routers;
 using eXtensionSharp;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,14 +15,14 @@ namespace EWS.WebApi.Server.Controllers.Account;
 /// <summary>
 /// 접근에 대한 정보
 /// </summary>
-public class TokenController : JControllerBase
+public class TokenController : JControllerBase<EWSMsDbContext>
 {
     /// <summary>
-    /// ctor
+    /// 
     /// </summary>
-    /// <param name="accessor"></param>
-    public TokenController(IHttpContextAccessor accessor) : base(accessor)
+    public TokenController()
     {
+        
     }
     
     /// <summary>
@@ -31,18 +32,25 @@ public class TokenController : JControllerBase
     /// <returns></returns>
     [AllowAnonymous]
     [HttpPost]
-    public async Task<ActionResult> Get(TokenRequest model)
+    public async Task<ActionResult> Get([FromServices]ITokenService service,
+        [FromServices]ILocalizer localizer,
+        TokenRequest model)
     {
         IResultBase<TokenResponse> result = null;
-        using (var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor))
-        {
-            sr.Register<ITokenService, TokenRequest, IResultBase<TokenResponse>>()
-                .AddFilter(() => model.xIsNotEmpty())
-                .SetParameter(() => model)
-                .Executed(res => result = res);
-
-            await sr.ExecuteAsync();
-        }
+        await service.Create<ITokenService, TokenRequest, IResultBase<TokenResponse>>()
+            .UseTransaction(this.Db)
+            .AddFilter(model.xIsNotEmpty)
+            .SetParameter(() => model)
+            .SetValidator(new TokenRequest.Validator(localizer))
+            .OnValidated(v =>
+            {
+                result = JResult<TokenResponse>.Fail(v.Errors.First().ErrorMessage);
+            })
+            .OnExecuted(r =>
+            {
+                result = r;
+            });
+        
         return Ok(result);
     }
     
@@ -53,16 +61,23 @@ public class TokenController : JControllerBase
     /// <returns></returns>
     [AllowAnonymous]
     [HttpPost("refresh")]
-    public async Task<ActionResult> Refresh([FromBody] RefreshTokenRequest model)
+    public async Task<ActionResult> Refresh([FromServices]ITokenRefreshService service,
+        [FromBody] RefreshTokenRequest model)
     {
         IResultBase<TokenResponse> result = null;
-        
-        using var sr = ServiceRouter.Create<EWSMsDbContext>(this.Accessor);
-        sr.Register<ITokenRefreshService, RefreshTokenRequest, IResultBase<TokenResponse>>()
-            .AddFilter(() => model.xIsNotEmpty())
+        await service.Create<ITokenRefreshService, RefreshTokenRequest, IResultBase<TokenResponse>>()
+            .UseTransaction(this.Db)
+            .AddFilter(model.xIsNotEmpty)
             .SetParameter(() => model)
-            .Executed(res => result = res);
-        await sr.ExecuteAsync();
+            .SetValidator(new RefreshTokenRequest.Valdiator(Localizer))
+            .OnValidated(m =>
+            {
+                result = JResult<TokenResponse>.Fail(m.Errors.First().ErrorMessage);
+            })
+            .OnExecuted(m =>
+            {
+                result = m;
+            });
         
         return Ok(result);
     }    

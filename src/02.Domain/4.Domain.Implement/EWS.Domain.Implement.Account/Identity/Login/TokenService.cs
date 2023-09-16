@@ -32,7 +32,7 @@ public class TokenService : ServiceImplBase<TokenService, TokenRequest, IResultB
     public override async Task<bool> OnExecutingAsync()
     {
         var users = Db.Set<User>();
-        var user = await users.FirstOrDefaultAsync(m => m.TenantId == Context.TenantId && m.Email == this.Request.Email);
+        var user = await users.AsNoTracking().FirstOrDefaultAsync(m => m.TenantId == Context.TenantId && m.Email == this.Request.Email);
         if (user.xIsEmpty())
         {
             this.Result = await JResult<TokenResponse>.FailAsync("Access failed.");
@@ -61,7 +61,7 @@ public class TokenService : ServiceImplBase<TokenService, TokenRequest, IResultB
     public override async Task OnExecuteAsync()
     {
         var users = Db.Set<User>();
-        var user = await users.FirstOrDefaultAsync(m => m.TenantId == Context.TenantId && m.Email == this.Request.Email);
+        var user = await users.AsNoTracking().FirstOrDefaultAsync(m => m.TenantId == Context.TenantId && m.Email == this.Request.Email);
 
         if (user.xIsEmpty())
         {
@@ -101,19 +101,19 @@ public class TokenService : ServiceImplBase<TokenService, TokenRequest, IResultB
         }
 
         string token = string.Empty;
-        await ServiceLoader<IGetRefreshTokenService, User, string>.Create(_getRefreshTokenService)
+        await _getRefreshTokenService.Create<IGetRefreshTokenService, User, string>()
             .AddFilter(() => user.xIsNotEmpty())
             .SetParameter(() => user)
-            .OnExecuted((res, v) =>
+            .OnExecuted((res) =>
             {
                 user.RefreshToken = res;
                 user.RefreshTokenExpiryTime = DateTime.Now.AddDays(5);
             });
 
-        await ServiceLoader<IGenerateJwtTokenService, User, string>.Create(_generateJwtTokenService)
+        await _generateJwtTokenService.Create<IGenerateJwtTokenService, User, string>()
             .AddFilter(() => user.xIsNotEmpty())
             .SetParameter(() => user)
-            .OnExecuted((res, v) => token = res);
+            .OnExecuted((res) => token = res);
 
         var response = new TokenResponse()
         {

@@ -34,15 +34,15 @@ public class GetClaimsService : ServiceImplBase<GetClaimsService, User, IEnumera
         var roleClaimDb = Db.Set<RoleClaim>();
         
         var userClaims = new List<Claim>();
-        var tenant = await tenantDb.FirstOrDefaultAsync(m => m.Id == this.Request.TenantId);
-        var userRole = await userRoleDb.FirstOrDefaultAsync(m => m.TenantId == this.Request.TenantId && m.UserId == this.Request.Id);
+        var tenant = await tenantDb.AsNoTracking().FirstOrDefaultAsync(m => m.Id == this.Request.TenantId);
+        var userRole = await userRoleDb.AsNoTracking().FirstOrDefaultAsync(m => m.TenantId == this.Request.TenantId && m.UserId == this.Request.Id);
         var roles = await roleDb.Where(m => m.TenantId == this.Request.TenantId && m.Id == userRole.RoleId).ToListAsync();
         var roleClaims = new List<Claim>();
         var permissionClaims = new List<Claim>();
         foreach (var role in roles)
         {
             roleClaims.Add(new Claim(ClaimTypes.Role, role.Name));
-            var results = await roleClaimDb.Where(m => m.TenantId == this.Request.TenantId && m.RoleId == role.Id)
+            var results = await roleClaimDb.AsNoTracking().Where(m => m.TenantId == this.Request.TenantId && m.RoleId == role.Id)
                 .ToListAsync();
             var allPermissionsForThisRoles = new List<Claim>();
             results.ForEach(item =>

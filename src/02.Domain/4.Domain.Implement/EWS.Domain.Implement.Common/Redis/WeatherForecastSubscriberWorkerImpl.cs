@@ -35,10 +35,10 @@ public class WeatherForecastSubscriberWorkerImpl : RedisSubscriberWorkerImplBase
         var req = this.RedisWorkerProtocol.Request.xToEntity<WeatherForecastResult>();
         Log.Logger.Debug("Debug:{REQ}", req);
         
-        await ServiceLoader<IWeatherForecastServiceV3, int, WeatherForecastResult>.Create(service)
+        await service.Create<IWeatherForecastServiceV3, int, WeatherForecastResult>()
             .AddFilter(() => this.RedisWorkerProtocol.xIsNotEmpty())
             .SetParameter(() => req.Id)
-            .OnExecuted((res, v) => result = res);
+            .OnExecuted((res) => result = res);
         
         await Task.Delay(10 * 1000);
         await hostNotificationService.NotificationAsync();

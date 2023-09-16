@@ -1,5 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using System.Data;
+using EWS.Application.Language;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+using Serilog.Core;
 
 namespace EWS.Domain.Infra;
 
@@ -10,10 +17,17 @@ namespace EWS.Domain.Infra;
 [Route("api/[controller]")]
 public abstract class JControllerBase : ControllerBase
 {
-    protected readonly IHttpContextAccessor Accessor;
-
-    protected JControllerBase(IHttpContextAccessor accessor)
+    protected ILogger Logger => Log.Logger;
+    protected ILocalizer Localizer => HttpContext.RequestServices.GetRequiredService<ILocalizer>();
+    
+    
+    protected JControllerBase()
     {
-        this.Accessor = accessor;
     }
 }
+
+public abstract class JControllerBase<TDbContext> : JControllerBase
+where TDbContext : DbContext
+{
+    protected TDbContext Db => HttpContext.RequestServices.GetRequiredService<TDbContext>();
+} 

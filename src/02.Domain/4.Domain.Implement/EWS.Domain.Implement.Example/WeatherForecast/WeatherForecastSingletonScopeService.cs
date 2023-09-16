@@ -6,10 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Example.WeatherForecast;
 
-public class WeatherForecastSingletonService : SingletonServiceImpl<WeatherForecastSingletonService, int, Entity.Example.WeatherForecast>, IWeatherForecastSingletonService
+public class WeatherForecastSingletonService : ServiceImplBase<WeatherForecastSingletonService, int, Entity.Example.WeatherForecast>, IWeatherForecastSingletonService
 {
     private readonly Entity.Example.WeatherForecast _weatherForecast;
-    public WeatherForecastSingletonService(IHttpContextAccessor accessor) : base(accessor)
+    public WeatherForecastSingletonService(DbContext dbContext, ISessionContext context) : base(dbContext, context)
     {
         _weatherForecast = new()
         {
@@ -21,12 +21,12 @@ public class WeatherForecastSingletonService : SingletonServiceImpl<WeatherForec
         };
     }
 
-    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    public override Task<bool> OnExecutingAsync()
     {
         return Task.FromResult(true);
     }
 
-    public override Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override Task OnExecuteAsync()
     {
         this.Result = _weatherForecast;
         return Task.CompletedTask;

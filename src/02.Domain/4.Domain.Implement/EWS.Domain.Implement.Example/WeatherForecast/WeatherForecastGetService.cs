@@ -9,20 +9,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EWS.Domain.Implement.Example.WeatherForecast;
 
-public class WeatherForecastGetService : ScopeServiceImpl<WeatherForecastGetService, int, WeatherForecastResult>, IWeatherForecastGetService
+public class WeatherForecastGetService : ServiceImplBase<WeatherForecastGetService, int, WeatherForecastResult>, IWeatherForecastGetService
 {
-    public WeatherForecastGetService(IHttpContextAccessor accessor) : base(accessor)
+    public WeatherForecastGetService(DbContext dbContext, ISessionContext context) : base(dbContext, context)
     {
     }
 
-    public override Task<bool> OnExecutingAsync(DbContext dbContext, ISessionContext context)
+    public override Task<bool> OnExecutingAsync()
     {
         return Task.FromResult(this.Request > 0);
     }
 
-    public override async Task OnExecuteAsync(DbContext dbContext, ISessionContext context)
+    public override async Task OnExecuteAsync()
     {
-        this.Result = await dbContext.CreateSelectBuilder<Entity.Example.WeatherForecast>(context)
+        this.Result = await this.Db.CreateSelectBuilder<Entity.Example.WeatherForecast>(this.Context)
             .SetQueryable(q => q.Where(m => m.Id == this.Request))
             .ToFirstAsync<WeatherForecastResult>(res => new WeatherForecastResult()
             {
