@@ -115,7 +115,7 @@ where TService : IServiceImplBase<TRequest, TResult>
                 TransactionScopeAsyncFlowOption.Enabled);
             try
             {
-                await ExecutedCore(resultAction);
+                await ExecuteCore(resultAction);
                 scope.Complete();
             }
             catch (Exception e)
@@ -126,12 +126,28 @@ where TService : IServiceImplBase<TRequest, TResult>
         }
         else
         {
-            await ExecutedCore(resultAction);
+            await ExecuteCore(resultAction);
         }
     }
-    
 
-    private async Task ExecutedCore(Action<TResult> resultBehavior = null)
+    #region [execute core]
+    private async Task ExecuteCore(Action<TResult> resultBehavior = null)
+    {
+        if(InvokedFilter().xIsFalse()) return;
+
+        InvokedParameter();
+
+        var valid = await InvokedValidatingAsync(_service.Request);
+        if(valid.xIsFalse()) return;
+
+        await GetCacheAsync();
+
+        await ExecuteAsync(resultBehavior);
+
+        await SetCacheAsync();
+    }
+    
+    private bool InvokedFilter()
     {
         var filterValid = true;
         _filters.ForEach(filter =>
@@ -140,28 +156,38 @@ where TService : IServiceImplBase<TRequest, TResult>
             if (filterValid.xIsFalse()) return;
         });
 
-        if (filterValid.xIsFalse()) return;
+        return filterValid;
+    }
 
+    private void InvokedParameter()
+    {
         TRequest parameter = default(TRequest);
+
         if (_parameter.xIsNotEmpty())
         {
             parameter = _parameter.Invoke();
             _service.Request = parameter;
         }
+    }
 
+    private async Task<bool> InvokedValidatingAsync(TRequest parameter)
+    {
         if (_validator.xIsNotEmpty())
         {
-            var validationResult = await _validator.ValidateAsync(parameter);
-            if (validationResult.IsValid.xIsFalse())
+            var rs = await _validator.ValidateAsync(parameter);
+            if (rs.IsValid.xIsFalse())
             {
-                if (_validateBehavior.xIsNotEmpty())
-                {
-                    _validateBehavior(validationResult);
-                    return;
-                }
+                _validateBehavior(rs);
             }
+
+            return rs.IsValid;
         }
 
+        return true;
+    }
+
+    private async Task GetCacheAsync()
+    {
         if (_cache.xIsNotEmpty())
         {
             var bytes = await _cache.GetAsync(_cacheKey.xGetHashCode());
@@ -171,12 +197,13 @@ where TService : IServiceImplBase<TRequest, TResult>
                 if (exist.xIsNotEmpty())
                 {
                     _service.Result = exist;
-                    return;
                 }
             }    
         }
-        
-        
+    }
+
+    private async Task ExecuteAsync(Action<TResult> resultBehavior)
+    {
         var isOk = await _service.OnExecutingAsync();
         if (isOk)
         {
@@ -184,15 +211,20 @@ where TService : IServiceImplBase<TRequest, TResult>
             if (resultBehavior.xIsNotEmpty())
             {
                 resultBehavior(_service.Result);
-
-                if (_cache.xIsNotEmpty())
-                {
-                    if (_service.Result.xIsNotEmpty())
-                    {
-                        await _cache.SetAsync(_cacheKey.xGetHashCode(), _service.Result.xToBytes(), _cacheEntryOptions);
-                    }    
-                }
             }
         }
     }
+
+    private async Task SetCacheAsync()
+    {
+        if (_cache.xIsNotEmpty())
+        {
+            if (_service.Result.xIsNotEmpty())
+            {
+                await _cache.SetAsync(_cacheKey.xGetHashCode(), _service.Result.xToBytes(), _cacheEntryOptions);
+            }    
+        }
+    }    
+
+    #endregion
 }
