@@ -1,3 +1,5 @@
+using System.Data;
+using System.Transactions;
 using EWS.Application.Wrapper;
 using EWS.Domain.Abstraction.WeatherForecast;
 using EWS.Domain.Base;
@@ -11,7 +13,11 @@ using EWS.Infrastructure.Extentions;
 using eXtensionSharp;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using MongoDB.Driver;
+using IsolationLevel = System.Transactions.IsolationLevel;
+using TransactionOptions = System.Transactions.TransactionOptions;
 
 namespace EWS.WebApi.Server.Controllers;
 
@@ -101,7 +107,6 @@ public class WeatherForecastController : JUnverifiedControllerBase<EWSMsDbContex
         IResultBase<int> result = null;
         await service.Create<IWeatherForecastAddService, WeatherForecast, IResultBase<int>>()
             .UseTransaction(this.Db)
-            .AddFilter(() => request.Id.xIsNotEmptyNum())
             .SetParameter(() => request)
             .OnExecuted((res) => result = res);
         
@@ -177,12 +182,18 @@ public class WeatherForecastController : JUnverifiedControllerBase<EWSMsDbContex
                 IsActive = true
             });
         });
-        
-        await service.Create<IWeatherForecastBulkInsertService, IEnumerable<WeatherForecastBulkRequest>, IResultBase>()
-            .UseTransaction(this.Db)
-            .AddFilter(() => list.Count.xIsNotEmptyNum())
-            .SetParameter(() => list)
-            .OnExecuted((res) => result = res);
+
+
+        using (var scope = new TransactionScope())
+        {
+            await service.Create<IWeatherForecastBulkInsertService, IEnumerable<WeatherForecastBulkRequest>, IResultBase>()
+                .UseTransaction(this.Db)
+                .AddFilter(() => list.Count.xIsNotEmptyNum())
+                .SetParameter(() => list)
+                .OnExecuted((res) => result = res);
+            
+            scope.Complete();
+        }
         
         return Ok(result);
     }

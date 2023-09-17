@@ -44,6 +44,7 @@ public class SqlBulkBuilder<T>
         foreach (T[] batchItem in batchItems)
         {
             var sql = CreateSql(schema, tableName, batchItem);
+            //await this._dbContext.Database.ExecuteSqlRawAsync(sql);
             await this._dbContext.Database.GetDbConnection().ExecuteAsync(sql);
             await Task.Delay(100);
         }
@@ -164,7 +165,7 @@ public class SqlBulkBuilder<T>
             valueSql = valueSql.Substring(0, valueSql.LastIndexOf(','));
             if (i < items.Count() - 1)
             {
-                valueSql += " ), " + Environment.NewLine;
+                valueSql += " ) " + Environment.NewLine;
             }
             else
             {

@@ -5,6 +5,7 @@ using EWS.Domain.Base;
 using EWS.Domain.Identity;
 using EWS.Domain.Infrastructure;
 using EWS.Entity;
+using EWS.Entity.Db;
 using EWS.Infrastructure.ServiceRouter.Abstract;
 using EWS.Infrastructure.Session.Abstract;
 using eXtensionSharp;
@@ -18,7 +19,7 @@ public class TokenService : ServiceImplBase<TokenService, TokenRequest, IResultB
     private readonly IPasswordHasher<User> _passwordHasher;
     private readonly IGetRefreshTokenService _getRefreshTokenService;
     private readonly IGenerateJwtTokenService _generateJwtTokenService;
-    public TokenService(DbContext dbContext, 
+    public TokenService(EWSMsDbContext dbContext, 
         ISessionContext context, 
         IPasswordHasher<User> passwordHasher,
         IGetRefreshTokenService getRefreshTokenService,

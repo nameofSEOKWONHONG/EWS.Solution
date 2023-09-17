@@ -15,7 +15,7 @@ namespace EWS.Domain.Implement.Account.Users;
 
 public class GetAllUsersService : ServiceImplBase<GetAllUsersService, GetAllUsersRequest, JPaginatedResult<UserResult>>, IGetAllUsersService
 {
-    public GetAllUsersService(DbContext dbContext, ISessionContext context) : base(dbContext, context)
+    public GetAllUsersService(EWSMsDbContext dbContext, ISessionContext context) : base(dbContext, context)
     {
     }
 

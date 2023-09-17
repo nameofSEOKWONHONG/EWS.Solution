@@ -13,7 +13,7 @@ namespace EWS.Domain.Implement.Account.Users;
 
 public class GetUserService : ServiceImplBase<GetUserService, string, IResultBase<User>>, IGetUserService
 {
-    public GetUserService(DbContext dbContext, ISessionContext context) : base(dbContext, context)
+    public GetUserService(EWSMsDbContext dbContext, ISessionContext context) : base(dbContext, context)
     {
     }
 

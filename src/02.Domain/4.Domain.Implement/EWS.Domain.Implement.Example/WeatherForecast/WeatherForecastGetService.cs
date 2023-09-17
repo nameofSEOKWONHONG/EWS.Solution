@@ -2,6 +2,7 @@
 using EWS.Domain.Common.Enums;
 using EWS.Domain.Example;
 using EWS.Domain.Infra.QueryBuilder.NumberEntityBase;
+using EWS.Entity.Db;
 using EWS.Infrastructure.ServiceRouter.Abstract;
 using EWS.Infrastructure.Session.Abstract;
 using Microsoft.AspNetCore.Http;
@@ -11,7 +12,7 @@ namespace EWS.Domain.Implement.Example.WeatherForecast;
 
 public class WeatherForecastGetService : ServiceImplBase<WeatherForecastGetService, int, WeatherForecastResult>, IWeatherForecastGetService
 {
-    public WeatherForecastGetService(DbContext dbContext, ISessionContext context) : base(dbContext, context)
+    public WeatherForecastGetService(EWSMsDbContext dbContext, ISessionContext context) : base(dbContext, context)
     {
     }
 

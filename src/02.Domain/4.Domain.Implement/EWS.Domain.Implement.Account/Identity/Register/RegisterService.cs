@@ -20,7 +20,7 @@ namespace EWS.Domain.Implement.Account.Identity;
 public class RegisterService : ServiceImplBase<RegisterService, RegisterRequest, IResultBase>, IRegisterService
 {
     private readonly IPasswordHasher<User> _passwordHasher;
-    public RegisterService(DbContext dbContext, ISessionContext context, IPasswordHasher<User> passwordHasher) : base(dbContext, context)
+    public RegisterService(EWSMsDbContext dbContext, ISessionContext context, IPasswordHasher<User> passwordHasher) : base(dbContext, context)
     {
         _passwordHasher = passwordHasher;
     }

@@ -8,3 +8,8 @@ public interface IWeatherForecastAddService : IServiceImplBase<Entity.Example.We
 {
     
 }
+
+public interface IWeatherForecastAdd2Service : IServiceImplBase<Entity.Example.WeatherForecast, IResultBase<int>>, IScopeService
+{
+    
+}

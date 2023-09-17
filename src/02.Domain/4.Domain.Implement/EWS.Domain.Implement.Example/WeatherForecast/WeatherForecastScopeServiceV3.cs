@@ -1,6 +1,7 @@
 ﻿using EWS.Domain.Abstraction.WeatherForecast;
 using EWS.Domain.Example;
 using EWS.Domain.Infra.QueryBuilder.NumberEntityBase;
+using EWS.Entity.Db;
 using EWS.Infrastructure.ServiceRouter.Abstract;
 using EWS.Infrastructure.Session.Abstract;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,7 @@ namespace EWS.Domain.Implement.Example.WeatherForecast;
 
 public class WeatherForecastServiceV3: ServiceImplBase<WeatherForecastServiceV3, int, WeatherForecastResult>, IWeatherForecastServiceV3
 {
-    public WeatherForecastServiceV3(DbContext dbContext, ISessionContext context) : base(dbContext, context)
+    public WeatherForecastServiceV3(EWSMsDbContext dbContext, ISessionContext context) : base(dbContext, context)
     {
     }
 

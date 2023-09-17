@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using EWS.Application.Const;
 using EWS.Domain.Abstraction.Account.Identity;
+using EWS.Entity.Db;
 using EWS.Infrastructure.ServiceRouter.Abstract;
 using EWS.Infrastructure.Session.Abstract;
 using eXtensionSharp;
@@ -15,7 +16,7 @@ namespace EWS.Domain.Implement.Account.Identity;
 public class GetSigningCredentialsService : ServiceImplBase<GetSigningCredentialsService, bool, SigningCredentials>, IGetSigningCredentialsService
 {
     private readonly IConfiguration _configuration;
-    public GetSigningCredentialsService(DbContext dbContext, IConfiguration configuration) : base(dbContext, null)
+    public GetSigningCredentialsService(EWSMsDbContext dbContext, IConfiguration configuration) : base(dbContext, null)
     {
         _configuration = configuration;
     }

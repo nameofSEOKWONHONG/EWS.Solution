@@ -13,7 +13,7 @@ namespace EWS.Domain.Implement.Account.Users;
 
 public class RemoveUserService : ServiceImplBase<RemoveUserService, string, IResultBase>, IRemoveUserService
 {
-    public RemoveUserService(DbContext dbContext, ISessionContext context) : base(dbContext, context)
+    public RemoveUserService(EWSMsDbContext dbContext, ISessionContext context) : base(dbContext, context)
     {
     }
 

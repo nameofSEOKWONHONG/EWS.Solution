@@ -4,10 +4,8 @@ using EWS.Infrastructure.ServiceRouter.Abstract;
 using eXtensionSharp;
 using FluentValidation.Results;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Distributed;
 using Serilog;
-using IsolationLevel = System.Data.IsolationLevel;
 
 namespace EWS.Domain.Infrastructure;
 
@@ -43,8 +41,9 @@ where TService : IServiceImplBase<TRequest, TResult>
     
     private DbContext _db;
     private bool _useTransaction;
+    private bool _useAdoTransaction;
     private TransactionScopeOption _transactionScopeOption;
-    private IsolationLevel _isolationLevel;
+    private System.Transactions.IsolationLevel _isolationLevel;
     
     #endregion
 
@@ -52,15 +51,14 @@ where TService : IServiceImplBase<TRequest, TResult>
 
     private IDistributedCache _cache;
     private string _cacheKey;
-    private DistributedCacheEntryOptions _cacheEntryOptions;    
+    private DistributedCacheEntryOptions _cacheEntryOptions;
 
     #endregion
 
-    
-
 
     public ServiceLoader<TService, TRequest, TResult> UseTransaction<TDbContext>(TDbContext db, 
-        IsolationLevel isolationLevel = IsolationLevel.ReadUncommitted)
+        TransactionScopeOption option = TransactionScopeOption.Required,
+        System.Transactions.IsolationLevel isolationLevel = System.Transactions.IsolationLevel.ReadUncommitted)
     where TDbContext : DbContext
     {
         _db = db;
@@ -112,22 +110,18 @@ where TService : IServiceImplBase<TRequest, TResult>
     {
         if (_useTransaction.xIsTrue())
         {
-            IDbContextTransaction transaction = null;
+            using var scope = new TransactionScope(_transactionScopeOption,
+                new TransactionOptions() { IsolationLevel = _isolationLevel },
+                TransactionScopeAsyncFlowOption.Enabled);
             try
             {
-                if (_db.Database.CurrentTransaction.xIsNotEmpty())
-                {
-                    transaction = await _db.Database.BeginTransactionAsync(IsolationLevel.ReadUncommitted);
-                }
-
                 await ExecutedCore(resultAction);
-                if (transaction.xIsNotEmpty()) await transaction.CommitAsync();
+                scope.Complete();
             }
             catch (Exception e)
             {
                 Log.Logger.Error(e, "ServiceLoader OnExecuted Error : {Error}", e.Message);
-                await transaction.RollbackAsync();
-                throw;                
+                throw;                    
             }
         }
         else

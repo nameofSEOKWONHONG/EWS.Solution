@@ -55,8 +55,8 @@ public class NumberEntityBaseUpsertBuilder<T> : EfUpsertBuilderBase<T>
                     TenantId = this.Context.TenantId,
                     TableName = XAttributeExtensions.xGetTableName<T>(),
                     Year = now.Year,
-                    Month = now.Month,
-                    Day = now.Day
+                    Month = 0,
+                    Day = 0
                 });            
             exist.Id = seq;
             await db.AddAsync(exist);

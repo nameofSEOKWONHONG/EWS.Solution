@@ -11,7 +11,7 @@ namespace EWS.Domain.Implement.Account.Identity;
 
 public class GetRefreshTokenService : ServiceImplBase<GetRefreshTokenService, User, string>, IGetRefreshTokenService
 {
-    public GetRefreshTokenService(DbContext dbContext) : base(dbContext, null)
+    public GetRefreshTokenService(EWSMsDbContext dbContext) : base(dbContext, null)
     {
     }
 

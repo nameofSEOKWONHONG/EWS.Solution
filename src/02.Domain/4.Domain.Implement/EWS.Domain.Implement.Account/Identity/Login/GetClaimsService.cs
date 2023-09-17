@@ -16,7 +16,7 @@ namespace EWS.Domain.Implement.Account.Identity;
 
 public class GetClaimsService : ServiceImplBase<GetClaimsService, User, IEnumerable<Claim>>, IGetClaimsService
 {
-    public GetClaimsService(DbContext dbContext) : base(dbContext, null)
+    public GetClaimsService(EWSMsDbContext dbContext) : base(dbContext, null)
     {
         
     }

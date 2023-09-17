@@ -4,6 +4,7 @@ using EWS.Domain.Common.Enums;
 using EWS.Domain.Example;
 using EWS.Domain.Infra.QueryBuilder.NumberEntityBase;
 using EWS.Domain.Infrastructure;
+using EWS.Entity.Db;
 using EWS.Infrastructure.ServiceRouter.Abstract;
 using EWS.Infrastructure.Session.Abstract;
 using eXtensionSharp;
@@ -15,7 +16,7 @@ public class WeatherForecastGetAllService : ServiceImplBase<WeatherForecastGetAl
     IWeatherForecastGetAllService
 {
     private readonly IWeatherForecastGetService _weatherForecastGetService;
-    public WeatherForecastGetAllService(DbContext dbContext, ISessionContext context,
+    public WeatherForecastGetAllService(EWSMsDbContext dbContext, ISessionContext context,
         IWeatherForecastGetService weatherForecastGetService) : base(dbContext, context)
     {
         _weatherForecastGetService = weatherForecastGetService;

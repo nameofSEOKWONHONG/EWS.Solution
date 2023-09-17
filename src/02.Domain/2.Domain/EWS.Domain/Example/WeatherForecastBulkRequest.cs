@@ -1,7 +1,9 @@
-﻿using EWS.Domain.Base;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using EWS.Domain.Base;
 
 namespace EWS.Domain.Example;
 
+[Table("WeatherForecasts", Schema = "example")]
 public class WeatherForecastBulkRequest : JBulkBase
 {
     public int Id { get; set; }

@@ -5,6 +5,7 @@ using EWS.Domain.Base;
 using EWS.Domain.Identity;
 using EWS.Domain.Infrastructure;
 using EWS.Entity;
+using EWS.Entity.Db;
 using EWS.Infrastructure.ServiceRouter.Abstract;
 using eXtensionSharp;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,7 @@ public class TokenRefreshService : ServiceImplBase<TokenRefreshService, RefreshT
     private readonly IGetClaimsService _getClaimsService;
     private readonly IGenerateEncryptedTokenService _generateEncryptedTokenService;
     private readonly IGetRefreshTokenService _getRefreshTokenService;
-    public TokenRefreshService(DbContext dbContext, 
+    public TokenRefreshService(EWSMsDbContext dbContext, 
         IGetPrincipalFromExpiredTokenService getPrincipalFromExpiredTokenService,
         IGetSigningCredentialsService getSigningCredentialsService,
         IGetClaimsService getClaimsService,

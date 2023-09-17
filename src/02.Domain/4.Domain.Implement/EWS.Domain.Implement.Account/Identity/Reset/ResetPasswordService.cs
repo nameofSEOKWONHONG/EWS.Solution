@@ -17,7 +17,7 @@ namespace EWS.Domain.Implement.Account.Identity.Reset;
 public class ResetPasswordService : ServiceImplBase<ResetPasswordService, ResetPasswordRequest, IResultBase>, IResetPasswordService
 {
     private readonly IPasswordHasher<User> _passwordHasher;
-    public ResetPasswordService(DbContext dbContext, ISessionContext context, IPasswordHasher<User> passwordHasher) : base(dbContext, context)
+    public ResetPasswordService(EWSMsDbContext dbContext, ISessionContext context, IPasswordHasher<User> passwordHasher) : base(dbContext, context)
     {
         _passwordHasher = passwordHasher;
     }

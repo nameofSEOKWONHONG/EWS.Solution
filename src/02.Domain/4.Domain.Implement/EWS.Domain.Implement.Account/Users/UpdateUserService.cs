@@ -12,7 +12,7 @@ namespace EWS.Domain.Implement.Account.Users;
 
 public class UpdateUserService : ServiceImplBase<UpdateUserService, User, IResultBase>, IUpdateUserService 
 {
-    public UpdateUserService(DbContext dbContext, ISessionContext context) : base(dbContext, context)
+    public UpdateUserService(EWSMsDbContext dbContext, ISessionContext context) : base(dbContext, context)
     {
     }
 

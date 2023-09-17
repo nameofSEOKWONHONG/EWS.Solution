@@ -1,7 +1,9 @@
-﻿using EWS.Application.Wrapper;
+﻿using System.Data;
+using EWS.Application.Wrapper;
 using EWS.Domain.Abstraction.WeatherForecast;
 using EWS.Domain.Example;
 using EWS.Domain.Infra.Sql;
+using EWS.Entity.Db;
 using EWS.Infrastructure.ServiceRouter.Abstract;
 using EWS.Infrastructure.Session.Abstract;
 using Microsoft.AspNetCore.Http;
@@ -11,7 +13,7 @@ namespace EWS.Domain.Implement.Example.WeatherForecast;
 
 public class WeatherForecastBulkInsertService : ServiceImplBase<WeatherForecastBulkInsertService, IEnumerable<WeatherForecastBulkRequest>, IResultBase>, IWeatherForecastBulkInsertService
 {
-    public WeatherForecastBulkInsertService(DbContext dbContext, ISessionContext context) : base(dbContext, context)
+    public WeatherForecastBulkInsertService(EWSMsDbContext dbContext, ISessionContext context) : base(dbContext, context)
     {
     }
 

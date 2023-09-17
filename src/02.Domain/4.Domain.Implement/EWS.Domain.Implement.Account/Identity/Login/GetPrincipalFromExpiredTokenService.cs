@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using EWS.Application.Const;
 using EWS.Domain.Abstraction.Account.Identity;
+using EWS.Entity.Db;
 using EWS.Infrastructure.ServiceRouter.Abstract;
 using EWS.Infrastructure.Session.Abstract;
 using eXtensionSharp;
@@ -17,7 +18,7 @@ namespace EWS.Domain.Implement.Account.Identity;
 public class GetPrincipalFromExpiredTokenService : ServiceImplBase<GetPrincipalFromExpiredTokenService, string, ClaimsPrincipal>, IGetPrincipalFromExpiredTokenService
 {
     private readonly IConfiguration _configuration;
-    public GetPrincipalFromExpiredTokenService(DbContext dbContext, IConfiguration configuration) : base(dbContext, null)
+    public GetPrincipalFromExpiredTokenService(EWSMsDbContext dbContext, IConfiguration configuration) : base(dbContext, null)
     {
         _configuration = configuration;
     }
