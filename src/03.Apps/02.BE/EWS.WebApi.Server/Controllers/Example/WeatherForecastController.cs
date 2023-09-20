@@ -81,7 +81,7 @@ public class WeatherForecastController : JUnverifiedControllerBase<EWSMsDbContex
     {   
         WeatherForecastResult result = null;
         await service.Create<IWeatherForecastGetService, int, WeatherForecastResult>()
-            .AddFilter(() => id.xIsNotEmptyNum())
+            .AddFilter(() => id.xIsNotEmpty())
             .SetParameter(() => id)
             .SetOutputCache(cache, id.ToString(), new DistributedCacheEntryOptions()
             {
@@ -188,7 +188,7 @@ public class WeatherForecastController : JUnverifiedControllerBase<EWSMsDbContex
         {
             await service.Create<IWeatherForecastBulkInsertService, IEnumerable<WeatherForecastBulkRequest>, IResultBase>()
                 .UseTransaction(this.Db)
-                .AddFilter(() => list.Count.xIsNotEmptyNum())
+                .AddFilter(() => list.Count.xIsNotEmpty())
                 .SetParameter(() => list)
                 .OnExecuted((res) => result = res);
             

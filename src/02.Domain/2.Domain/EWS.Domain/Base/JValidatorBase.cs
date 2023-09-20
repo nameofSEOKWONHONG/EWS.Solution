@@ -37,12 +37,12 @@ public abstract class JValidatorBase<T> : AbstractValidator<T>
     protected void MinMaxLength(Expression<Func<T, string>> expression, int minLimit, int maxLimit)
     {
         var rule = RuleFor(expression);
-        if (minLimit.xIsNotEmptyNum())
+        if (minLimit.xIsNotEmpty())
         {
             rule.MinimumLength(minLimit)
                 .WithMessage(this._localizer["LBL00054"].xValue<string>("test"));
         }
-        if (maxLimit.xIsNotEmptyNum())
+        if (maxLimit.xIsNotEmpty())
         {
             rule.MaximumLength(maxLimit)
                 .WithMessage(this._localizer["LBL00056"].xValue<string>("test"));
